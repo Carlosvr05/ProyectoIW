@@ -3,7 +3,7 @@
 
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
-    <title>IW: Welcome</title>
+    <title>MenUni: Facultades</title>
 </head>
 
 <body class="d-flex flex-column h-100">
@@ -17,25 +17,28 @@
                     <h1 class="display-5 fw-bold">Nuestras Cafeterías</h1>
                     <p class="lead text-muted">Selecciona tu facultad para ver el menú de hoy.</p>
                 </div>
+                <div class="col-md-6">
+                    <input class="form-control form-control-lg" id="buscadorFacultades" type="text" placeholder="Buscar facultad (ej. Derecho)...">
+                </div>
             </div>
 
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 
-                <div class="col">
+                <div class="col facultad-item">
                     <div class="card h-100 shadow-sm border-0">
                         <div class="position-relative">
                             <span class="position-absolute top-0 end-0 badge bg-success m-2">Abierto</span>
                             <img th:src="@{/img/fdi.png}" class="card-img-top" alt="Informática" style="height: 200px; object-fit: cover;">
                         </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Facultad de Informática</h5>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title nombre-facultad">Facultad de Informática</h5>
                             <p class="card-text text-muted small">
                                 <i class="bi bi-geo-alt-fill"></i> Calle del Prof. José García Santesmases, 9
                             </p>
                             <p class="card-text">
                                 Menús variados, opciones veganas y amplia zona de mesas.
                             </p>
-                            <ul class="list-unstyled small text-muted mb-3">
+                            <ul class="list-unstyled small text-muted mb-3 mt-auto">
                                 <li><strong>Horario:</strong> 08:30 - 19:30</li>
                                 <li><strong>Aforo actual:</strong> Bajo</li>
                             </ul>
@@ -46,21 +49,21 @@
                     </div>
                 </div>
 
-                <div class="col">
+                <div class="col facultad-item">
                     <div class="card h-100 shadow-sm border-0">
                         <div class="position-relative">
                             <span class="position-absolute top-0 end-0 badge bg-success m-2">Abierto</span>
                             <img th:src="@{/img/fdd.png}" class="card-img-top" alt="Derecho" style="height: 200px; object-fit: cover;">
                         </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Facultad de Derecho</h5>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title nombre-facultad">Facultad de Derecho</h5>
                             <p class="card-text text-muted small">
                                 <i class="bi bi-geo-alt-fill"></i> Plaza de Menéndez Pelayo, 4
                             </p>
                             <p class="card-text">
                                 Cafetería clásica con terraza exterior y servicio de desayunos.
                             </p>
-                            <ul class="list-unstyled small text-muted mb-3">
+                            <ul class="list-unstyled small text-muted mb-3 mt-auto">
                                 <li><strong>Horario:</strong> 08:00 - 20:00</li>
                                 <li><strong>Aforo actual:</strong> Medio</li>
                             </ul>
@@ -71,21 +74,21 @@
                     </div>
                 </div>
 
-                <div class="col">
+                <div class="col facultad-item">
                     <div class="card h-100 shadow-sm border-0">
                         <div class="position-relative">
                             <span class="position-absolute top-0 end-0 badge bg-success m-2">Abierto</span>
                             <img th:src="@{/img/fdm.png}" class="card-img-top" alt="Medicina" style="height: 200px; object-fit: cover;">
                         </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Facultad de Medicina</h5>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title nombre-facultad">Facultad de Medicina</h5>
                             <p class="card-text">
                                 <i class="bi bi-geo-alt-fill"></i> Plaza de Ramón y Cajal
                             </p>
                             <p class="card-text">
                                 Especialidad en bocadillos y platos combinados a muy buenos precios.
                             </p>
-                            <ul class="list-unstyled small text-muted mb-3">
+                            <ul class="list-unstyled small text-muted mb-3 mt-auto">
                                 <li><strong>Horario:</strong> 08:00 - 18:00</li>
                                 <li><strong>Aforo actual:</strong> Alto</li>
                             </ul>
@@ -105,14 +108,17 @@
     <script>
         document.getElementById('buscadorFacultades').addEventListener('keyup', function() {
             let texto = this.value.toLowerCase();
+            // Buscamos solo los elementos que tengan la clase 'facultad-item'
             let tarjetas = document.querySelectorAll('.facultad-item');
 
             tarjetas.forEach(card => {
+                // Dentro de cada tarjeta, buscamos el título con clase 'nombre-facultad'
                 let nombre = card.querySelector('.nombre-facultad').textContent.toLowerCase();
+                
                 if (nombre.includes(texto)) {
-                    card.style.display = ''; // Mostrar
+                    card.style.display = ''; // Mostrar si coincide
                 } else {
-                    card.style.display = 'none'; // Ocultar
+                    card.style.display = 'none'; // Ocultar si no coincide
                 }
             });
         });

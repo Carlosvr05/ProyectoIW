@@ -25,6 +25,16 @@
              
             </div>
             </div>
+            
+            <div class="card bg-light mt-5 mb-5 border-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-info"><i class="bi bi-lightbulb"></i> Sabías que...</h5>
+                    <p class="card-text fs-5 fst-italic" id="textoConsejo">Cargando consejo...</p>
+                    <button class="btn btn-sm btn-outline-info" onclick="generarConsejo()">
+                        <i class="bi bi-arrow-clockwise"></i> Ver otro consejo
+                    </button>
+                </div>
+            </div>
 
             <h2 class="mt-5 mb-4 text-center">Nuestro Equipo</h2>
             <div class="row row-cols-1 row-cols-md-3 g-4 mb-5 justify-content-center">
@@ -73,6 +83,30 @@
     </main>
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
+
+    <script>
+        // 1. Definimos una lista (Array) de consejos
+        const consejos = [
+            "Beber agua antes de comer ayuda a la digestión.",
+            "La fruta entera es mejor que en zumo por la fibra.",
+            "Intenta reducir el azúcar en el café de la mañana.",
+            "Comer despacio aumenta la sensación de saciedad.",
+            "Las legumbres son una gran fuente de proteína vegetal."
+        ];
+
+        // 2. Función para elegir uno al azar
+        function generarConsejo() {
+            const indice = Math.floor(Math.random() * consejos.length);
+            const consejoElegido = consejos[indice];
+            
+            // 3. Cambiamos el texto en la página
+            document.getElementById('textoConsejo').innerText = consejoElegido;
+        }
+
+        // 4. Ejecutamos la función nada más cargar la página
+        document.addEventListener("DOMContentLoaded", generarConsejo);
+    </script>
+
 </body>
 
 </html>

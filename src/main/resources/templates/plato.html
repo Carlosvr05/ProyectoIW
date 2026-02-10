@@ -3,7 +3,7 @@
 
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
-    <title>IW: Welcome</title>
+    <title>MenUni: Carta</title>
 </head>
 
 <body class="d-flex flex-column h-100">
@@ -16,14 +16,14 @@
             <div class="row row-cols-1 row-cols-md-3 g-4">
 
                 <div class="col">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-100 shadow-sm plato-card">
                         <img th:src="@{/img/Hamburguesa-clasica.png}" class="card-img-top" alt="Hamburguesa" 
                              style="height: 200px; object-fit: cover;">
                         
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="card-title mb-0">Hamburguesa Clásica</h5>
-                                <span class="badge bg-success rounded-pill fs-6">8.50 €</span>
+                                <span class="badge bg-success rounded-pill fs-6 precio-base" data-precio="8.50">8.50 €</span>
                             </div>
                             
                             <p class="card-text text-muted flex-grow-1">
@@ -33,11 +33,11 @@
                             <div class="mt-3">
                                 <div class="row g-2">
                                     <div class="col-4">
-                                        <input type="number" class="form-control" value="1" min="1">
+                                        <input type="number" class="form-control input-cantidad" value="1" min="1">
                                     </div>
                                     <div class="col-8">
                                         <button class="btn btn-primary w-100">
-                                            Añadir al carrito
+                                            Añadir (<span class="precio-total">8.50</span> €)
                                         </button>
                                     </div>
                                 </div>
@@ -47,14 +47,14 @@
                 </div>
 
                 <div class="col">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-100 shadow-sm plato-card">
                         <img th:src="@{/img/Pizza-Margarita.png}" class="card-img-top" alt="Pizza" 
                              style="height: 200px; object-fit: cover;">
                         
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="card-title mb-0">Pizza Margarita</h5>
-                                <span class="badge bg-success rounded-pill fs-6">10.00 €</span>
+                                <span class="badge bg-success rounded-pill fs-6 precio-base" data-precio="10.00">10.00 €</span>
                             </div>
                             
                             <p class="card-text text-muted flex-grow-1">
@@ -64,11 +64,11 @@
                             <div class="mt-3">
                                 <div class="row g-2">
                                     <div class="col-4">
-                                        <input type="number" class="form-control" value="1" min="1">
+                                        <input type="number" class="form-control input-cantidad" value="1" min="1">
                                     </div>
                                     <div class="col-8">
                                         <button class="btn btn-primary w-100">
-                                            Añadir al carrito
+                                            Añadir (<span class="precio-total">10.00</span> €)
                                         </button>
                                     </div>
                                 </div>
@@ -78,14 +78,14 @@
                 </div>
 
                 <div class="col">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-100 shadow-sm plato-card">
                         <img th:src="@{/img/Ensalada-Cesar.png}" class="card-img-top" alt="Ensalada" 
                              style="height: 200px; object-fit: cover;">
                         
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="card-title mb-0">Ensalada César</h5>
-                                <span class="badge bg-success rounded-pill fs-6">7.50 €</span>
+                                <span class="badge bg-success rounded-pill fs-6 precio-base" data-precio="7.50">7.50 €</span>
                             </div>
                             
                             <p class="card-text text-muted flex-grow-1">
@@ -95,11 +95,11 @@
                             <div class="mt-3">
                                 <div class="row g-2">
                                     <div class="col-4">
-                                        <input type="number" class="form-control" value="1" min="1">
+                                        <input type="number" class="form-control input-cantidad" value="1" min="1">
                                     </div>
                                     <div class="col-8">
                                         <button class="btn btn-primary w-100">
-                                            Añadir al carrito
+                                            Añadir (<span class="precio-total">7.50</span> €)
                                         </button>
                                     </div>
                                 </div>
@@ -109,10 +109,49 @@
                 </div>
 
             </div>
-            </div>
+        </div>
     </main>
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
+
+    <script>
+        // Seleccionamos todas las tarjetas que tengan la clase 'plato-card'
+        document.querySelectorAll('.plato-card').forEach(card => {
+            
+            // Dentro de cada tarjeta, buscamos sus elementos
+            const input = card.querySelector('.input-cantidad');
+            const precioBaseElem = card.querySelector('.precio-base');
+            const precioTotalElem = card.querySelector('.precio-total');
+
+            // Obtenemos el precio numérico del atributo data-precio (ej: "8.50")
+            const precioBase = parseFloat(precioBaseElem.getAttribute('data-precio'));
+
+            // Añadimos un "escucha" para cuando el usuario cambie el número
+            input.addEventListener('change', function() {
+                actualizarPrecio();
+            });
+            
+            // También escuchamos 'keyup' por si escribe el número con teclado
+            input.addEventListener('keyup', function() {
+                actualizarPrecio();
+            });
+
+            function actualizarPrecio() {
+                let cantidad = parseInt(input.value);
+                
+                // Evitamos números negativos o vacíos
+                if (isNaN(cantidad) || cantidad < 1) {
+                    cantidad = 1;
+                }
+
+                // Calculamos el total
+                let total = (precioBase * cantidad).toFixed(2); // toFixed(2) asegura 2 decimales
+                
+                // Actualizamos el texto del botón
+                precioTotalElem.textContent = total;
+            }
+        });
+    </script>
 </body>
 
 </html>
