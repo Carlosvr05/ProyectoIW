@@ -64,9 +64,9 @@ public class SecurityConfig {
 				.requestMatchers("/css/**", "/js/**", "/img/**", "/", "/error").permitAll()
 				.requestMatchers("/api/**").permitAll()            // <-- public api access
 				.requestMatchers("/inicio/**").permitAll()  
-				.requestMatchers("/gestor/**").permitAll()  
+				.requestMatchers("/gestor/**").hasRole("ADMIN") 
 				.requestMatchers("/plato/**").permitAll() 
-				.requestMatchers("/gestorweb/**").permitAll()
+				.requestMatchers("/gestorweb/**").hasRole("ADMIN")
 				.requestMatchers("/facultades/**").permitAll()
 				.requestMatchers("/admin/**").hasRole("ADMIN")	   // <-- administration
 				.requestMatchers("/user/**").hasRole("USER")	     // <-- logged-in users

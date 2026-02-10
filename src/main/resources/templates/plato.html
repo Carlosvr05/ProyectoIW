@@ -10,14 +10,107 @@
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
     <main class="flex-shrink-0">
-        <div class="container">
-            <h1 class="mt-5">Bienvenid@</h1>
-        </div>
-    </main>
-    <p>
+        <div class="container mt-5 mb-5">
+            <h1 class="mb-4 text-center">Nuestros Platos</h1>
 
-        
-    </p>
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img th:src="@{/img/Hamburguesa-clasica.png}" class="card-img-top" alt="Hamburguesa" 
+                             style="height: 200px; object-fit: cover;">
+                        
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="card-title mb-0">Hamburguesa Clásica</h5>
+                                <span class="badge bg-success rounded-pill fs-6">8.50 €</span>
+                            </div>
+                            
+                            <p class="card-text text-muted flex-grow-1">
+                                Carne 100% vacuno con lechuga, tomate fresco y nuestra salsa especial.
+                            </p>
+                            
+                            <div class="mt-3">
+                                <div class="row g-2">
+                                    <div class="col-4">
+                                        <input type="number" class="form-control" value="1" min="1">
+                                    </div>
+                                    <div class="col-8">
+                                        <button class="btn btn-primary w-100">
+                                            Añadir al carrito
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img th:src="@{/img/Pizza-Margarita.png}" class="card-img-top" alt="Pizza" 
+                             style="height: 200px; object-fit: cover;">
+                        
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="card-title mb-0">Pizza Margarita</h5>
+                                <span class="badge bg-success rounded-pill fs-6">10.00 €</span>
+                            </div>
+                            
+                            <p class="card-text text-muted flex-grow-1">
+                                Base fina con tomate San Marzano, mozzarella y albahaca fresca.
+                            </p>
+                            
+                            <div class="mt-3">
+                                <div class="row g-2">
+                                    <div class="col-4">
+                                        <input type="number" class="form-control" value="1" min="1">
+                                    </div>
+                                    <div class="col-8">
+                                        <button class="btn btn-primary w-100">
+                                            Añadir al carrito
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img th:src="@{/img/Ensalada-Cesar.png}" class="card-img-top" alt="Ensalada" 
+                             style="height: 200px; object-fit: cover;">
+                        
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="card-title mb-0">Ensalada César</h5>
+                                <span class="badge bg-success rounded-pill fs-6">7.50 €</span>
+                            </div>
+                            
+                            <p class="card-text text-muted flex-grow-1">
+                                Lechuga romana, pollo a la parrilla, picatostes y salsa césar casera.
+                            </p>
+                            
+                            <div class="mt-3">
+                                <div class="row g-2">
+                                    <div class="col-4">
+                                        <input type="number" class="form-control" value="1" min="1">
+                                    </div>
+                                    <div class="col-8">
+                                        <button class="btn btn-primary w-100">
+                                            Añadir al carrito
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            </div>
+    </main>
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 </body>
