@@ -36,4 +36,30 @@ public class RootController {
     public String index(Model model) {
         return "index";
     }
+
+    @GetMapping("/inicio")  //Ruta 
+    public String inicio(Model model) {  //nombre de la funcion da igual
+        return "inicio";    //nombre de vista
+    }
+
+    @GetMapping("/plato")  //Ruta 
+    public String plato(Model model) {  //nombre de la funcion da igual
+        return "plato";    //nombre de vista
+    }
+
+    @GetMapping("/gestor")  //Ruta 
+    public String gestor(Model model) {  //nombre de la funcion da igual
+        return "gestor";    //nombre de vista
+    }
+
+    @GetMapping("/gestorweb")  //Ruta 
+    public String gestoweb(Model model) {  //nombre de la funcion da igual
+        return "gestorweb";    //nombre de vista
+    }
+
+    @GetMapping("/facultades")  //Ruta 
+    public String facu(Model model) {  //nombre de la funcion da igual
+        return "facultades";    //nombre de vista
+    }
+
 }

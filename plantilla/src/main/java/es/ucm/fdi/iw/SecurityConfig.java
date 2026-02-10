@@ -1,5 +1,7 @@
 package es.ucm.fdi.iw;
 
+import java.util.regex.Pattern;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,6 +63,11 @@ public class SecurityConfig {
       .authorizeHttpRequests(authorize -> authorize
 				.requestMatchers("/css/**", "/js/**", "/img/**", "/", "/error").permitAll()
 				.requestMatchers("/api/**").permitAll()            // <-- public api access
+				.requestMatchers("/inicio/**").permitAll()  
+				.requestMatchers("/gestor/**").permitAll()  
+				.requestMatchers("/plato/**").permitAll() 
+				.requestMatchers("/gestorweb/**").permitAll()
+				.requestMatchers("/facultades/**").permitAll()
 				.requestMatchers("/admin/**").hasRole("ADMIN")	   // <-- administration
 				.requestMatchers("/user/**").hasRole("USER")	     // <-- logged-in users
 				.anyRequest().authenticated()
