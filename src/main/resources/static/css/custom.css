@@ -26,8 +26,6 @@ img.preview {
     border-radius: 10px;
 }
 
-mt-5{
-
-    text-align: center;
-
+.text-justify {
+  text-align: justify;
 }
