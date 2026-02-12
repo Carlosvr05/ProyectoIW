@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <title>IW: Welcome</title>
+</head>
+
+<body class="d-flex flex-column h-100">
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+
+    <main class="flex-shrink-0">
+        <div class="container">
+            <h1 class="mt-5 mb-4">🏆 Top Platos UCM</h1>
+            
+            <div class="mb-4">
+                <span class="me-2 fw-bold">Ordenar por:</span>
+                <button class="btn btn-outline-primary btn-sm me-2" onclick="ordenarPlatos('votos')">
+                    ⭐ Más votados
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="ordenarPlatos('nombre')">
+                    🔤 Nombre (A-Z)
+                </button>
+            </div>
+
+            <div id="contenedor-platos" class="row row-cols-1 row-cols-md-3 g-4">
+                
+                <div class="col plato-card" data-votos="95" data-nombre="Tortilla de Patatas">
+                    <div class="card h-100 shadow-sm">
+                        <img th:src="@{/img/Tortilla-papa.png}" class="card-img-top" alt="Plato" style="height: 150px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">Tortilla de Patatas</h5>
+                            <p class="card-text text-muted">Facultad de Informática</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-warning text-dark fs-6">⭐ 4.8</span>
+                                <small class="text-muted">95 votos</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col plato-card" data-votos="88" data-nombre="Bocadillo de Lomo">
+                    <div class="card h-100 shadow-sm">
+                        <img th:src="@{/img/Bocadillo-Lomo.png}" class="card-img-top" alt="Plato" style="height: 150px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">Bocadillo de Lomo</h5>
+                            <p class="card-text text-muted">Facultad de Derecho</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-warning text-dark fs-6">⭐ 4.5</span>
+                                <small class="text-muted">88 votos</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col plato-card" data-votos="92" data-nombre="Pizza Margarita">
+                    <div class="card h-100 shadow-sm">
+                        <img th:src="@{/img/Pizza-Margarita.png}" class="card-img-top" alt="Plato" style="height: 150px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">Pizza Margarita</h5>
+                            <p class="card-text text-muted">Facultad de Medicina</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-warning text-dark fs-6">⭐ 4.7</span>
+                                <small class="text-muted">92 votos</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="col plato-card" data-votos="60" data-nombre="Ensalada César">
+                    <div class="card h-100 shadow-sm">
+                        <img th:src="@{/img/Ensalada-Cesar.png}" class="card-img-top" alt="Plato" style="height: 150px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">Ensalada César</h5>
+                            <p class="card-text text-muted">Facultad de Filosofía</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-secondary text-white fs-6">⭐ 3.5</span>
+                                <small class="text-muted">60 votos</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
+
+    <script>
+        function ordenarPlatos(criterio) {
+            // 1. Seleccionamos el contenedor y las tarjetas
+            const contenedor = document.getElementById('contenedor-platos');
+            const tarjetas = Array.from(contenedor.getElementsByClassName('plato-card'));
+
+            // 2. Ordenamos el array de tarjetas
+            tarjetas.sort((a, b) => {
+                if (criterio === 'votos') {
+                    // De mayor a menor (descendente)
+                    // parseInt convierte el texto "95" en número 95
+                    return parseInt(b.dataset.votos) - parseInt(a.dataset.votos);
+                } else if (criterio === 'nombre') {
+                    // Alfabético (A-Z)
+                    return a.dataset.nombre.localeCompare(b.dataset.nombre);
+                }
+            });
+
+            // 3. Volvemos a añadir las tarjetas al contenedor en el nuevo orden
+            // (Esto mueve los elementos en el HTML, no los duplica)
+            tarjetas.forEach(tarjeta => contenedor.appendChild(tarjeta));
+        }
+    </script>
+</body>
+
+</html>
