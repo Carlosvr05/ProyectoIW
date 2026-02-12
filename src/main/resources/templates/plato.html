@@ -36,9 +36,20 @@
                                         <input type="number" class="form-control input-cantidad" value="1" min="1">
                                     </div>
                                     <div class="col-8">
-                                        <button class="btn btn-primary w-100">
-                                            Añadir (<span class="precio-total">8.50</span> €)
-                                        </button>
+                                        <div class="acciones d-grid gap-2">
+
+                                            <button th:if="${u == null}" class="alert alert-info">
+                                                <a href="/login">Inicia sesión</a> para poder comprar platos.
+                                            </button>
+
+                                            <button th:if="${u != null and u.hasRole('ADMIN')}" class="btn btn-danger">
+                                                Borrar Plato
+                                            </button>
+
+                                            <button th:if="${u != null and !u.hasRole('ADMIN')}" class="btn btn-primary">
+                                                 Añadir (<span class="precio-total">8.50</span> €)
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -67,9 +78,20 @@
                                         <input type="number" class="form-control input-cantidad" value="1" min="1">
                                     </div>
                                     <div class="col-8">
-                                        <button class="btn btn-primary w-100">
-                                            Añadir (<span class="precio-total">10.00</span> €)
-                                        </button>
+                                        <div class="acciones d-grid gap-2">
+
+                                            <button th:if="${u == null}" class="alert alert-info">
+                                                <a href="/login">Inicia sesión</a> para poder comprar platos.
+                                            </button>
+
+                                            <button th:if="${u != null and u.hasRole('ADMIN')}" class="btn btn-danger">
+                                                Borrar Plato
+                                            </button>
+
+                                            <button th:if="${u != null and !u.hasRole('ADMIN')}" class="btn btn-primary">
+                                                 Añadir (<span class="precio-total">10.00</span> €)
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -98,9 +120,20 @@
                                         <input type="number" class="form-control input-cantidad" value="1" min="1">
                                     </div>
                                     <div class="col-8">
-                                        <button class="btn btn-primary w-100">
-                                            Añadir (<span class="precio-total">7.50</span> €)
-                                        </button>
+                                        <div class="acciones d-grid gap-2">
+
+                                            <button th:if="${u == null}" class="alert alert-info">
+                                                <a href="/login">Inicia sesión</a> para poder comprar platos.
+                                            </button>
+
+                                            <button th:if="${u != null and u.hasRole('ADMIN')}" class="btn btn-danger">
+                                                Borrar Plato
+                                            </button>
+
+                                            <button th:if="${u != null and !u.hasRole('ADMIN')}" class="btn btn-primary">
+                                                 Añadir (<span class="precio-total">7.50</span> €)
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
