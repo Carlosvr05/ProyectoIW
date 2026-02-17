@@ -62,4 +62,10 @@ public class RootController {
         return "facultades";    //nombre de vista
     }
 
+    
+    @GetMapping("/carrito")  //Ruta 
+    public String carrito(Model model) {  //nombre de la funcion da igual
+        return "carrito";    //nombre de vista
+    }
+
 }
