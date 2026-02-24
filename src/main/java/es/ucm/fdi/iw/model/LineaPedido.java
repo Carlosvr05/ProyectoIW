@@ -1,4 +1,4 @@
-package main.java.es.ucm.fdi.iw.model;
+package es.ucm.fdi.iw.model;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
 import jakarta.persistence.*;

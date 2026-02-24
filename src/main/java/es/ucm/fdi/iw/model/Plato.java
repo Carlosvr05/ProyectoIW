@@ -1,9 +1,11 @@
-package main.java.es.ucm.fdi.iw.model;
+package es.ucm.fdi.iw.model;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Data
@@ -15,4 +17,6 @@ public class Plato {
     private long id;
     private String nombre;
     private double precio;
+    private List<String> facultades;
+    private List<String> alergenos;
 }

@@ -1,7 +1,8 @@
-package main.java.es.ucm.fdi.iw.model;
+package es.ucm.fdi.iw.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
+import java.util.ArrayList;
 import lombok.NoArgsConstructor;
 
 import es.ucm.fdi.iw.model.User;
