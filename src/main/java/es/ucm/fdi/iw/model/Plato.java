@@ -1,6 +1,9 @@
 package main.java.es.ucm.fdi.iw.model;
+import es.ucm.fdi.iw.model.Transferable;
+import es.ucm.fdi.iw.model.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
