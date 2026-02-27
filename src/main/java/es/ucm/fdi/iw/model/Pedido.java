@@ -5,14 +5,19 @@ import java.util.List;
 import java.util.ArrayList;
 import lombok.NoArgsConstructor;
 
-import es.ucm.fdi.iw.model.User;
-
-import java.util.ArrayList;
-
 @Entity
 @Data
 @NoArgsConstructor
 public class Pedido{
+
+    public enum Estado {
+        SOLICITADO,
+        PREPARANDO,
+        LISTO_PARA_RECOGER,
+        ENTREGADO,
+        CANCELADO
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
     @SequenceGenerator(name = "gen", sequenceName = "gen")
@@ -25,5 +30,6 @@ public class Pedido{
     @JoinColumn(name = "pedido_id") // Evita la creación de una tabla intermedia
     private List<LineaPedido> lineas = new ArrayList<>();
 
-   
+    @Enumerated(EnumType.STRING)
+    private Estado estado;
 }

@@ -1,11 +1,8 @@
 package es.ucm.fdi.iw.model;
-import es.ucm.fdi.iw.model.Transferable;
-import es.ucm.fdi.iw.model.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
-import java.util.ArrayList;
 
 @Entity
 @Data
@@ -16,7 +13,14 @@ public class Plato {
     @SequenceGenerator(name = "gen", sequenceName = "gen")
     private long id;
     private String nombre;
+    private String descripcion;
+    private String imagen; //Esto es la URL de la imagen para no tener que ponerla 
+    private boolean activo; 
     private double precio;
+    
+    @ElementCollection
     private List<String> facultades;
+
+    @ElementCollection
     private List<String> alergenos;
 }

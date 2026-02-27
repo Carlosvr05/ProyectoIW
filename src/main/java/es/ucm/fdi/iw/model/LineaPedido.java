@@ -1,6 +1,4 @@
 package es.ucm.fdi.iw.model;
-import es.ucm.fdi.iw.model.Transferable;
-import es.ucm.fdi.iw.model.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +16,7 @@ public class LineaPedido{
     private Plato plato; // Muchas líneas de pedido pueden referirse al mismo plato
 
     private int cantidad;
-
+    private double precioUnitario;
    
 }
 
