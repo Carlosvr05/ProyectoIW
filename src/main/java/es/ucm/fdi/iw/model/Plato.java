@@ -1,7 +1,11 @@
 package es.ucm.fdi.iw.model;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -18,8 +22,15 @@ public class Plato {
     private boolean activo; 
     private double precio;
     
-    @ElementCollection
-    private List<String> facultades;
+    @ManyToMany
+    @JoinTable(
+        name = "plato_facultades", // Nombre de la tabla intermedia
+        joinColumns = @JoinColumn(name = "plato_id"),
+        inverseJoinColumns = @JoinColumn(name = "facultad_id")
+    )
+    @EqualsAndHashCode.Exclude // Para calcular quién es el plato actual, no mira la lista de facultades, mira solo el ID del plato, el nombre, etc...;
+    @ToString.Exclude          // Esto hace que no se haga un bucle porque plato llama a facultad y facultad a plato otra vez
+    private List<Facultad> facultades = new ArrayList<>();
 
     @ElementCollection
     private List<String> alergenos;
