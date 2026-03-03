@@ -13,6 +13,10 @@
         <div class="container">
             <h1 class="mt-5">Contacta con nuestro equipo para cualquier duda &#128513;</h1>
 
+            <div th:if="${param.exito}" class="alert alert-success mt-3">
+                ¡Gracias! Tu mensaje ha sido enviado correctamente a nuestro equipo.
+            </div>
+            
             <form th:action="@{/contacto/enviar}" method="post" class="mt-4" style="max-width: 600px;">
                 
                 <div class="mb-3">

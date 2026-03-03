@@ -23,59 +23,26 @@
                 </button>
             </div>
 
-            <div id="contenedor-platos" class="row row-cols-1 row-cols-md-3 g-4">
+            <div id="contenedor-platos" class="row row-cols-1 row-cols-md-3 g-4 platos">
                 
-                <div class="col plato-card" data-votos="95" data-nombre="Tortilla de Patatas">
+                <div class="col plato-card" th:each="p : ${platos}" th:data-votos="${p.votos.size()}" th:data-nombre="${p.nombre}">
                     <div class="card h-100 shadow-sm">
-                        <img th:src="@{/img/Tortilla-papa.png}" class="card-img-top" alt="Plato" style="height: 150px; object-fit: cover;">
+                        <img th:src="@{/img/{name}(name=${p.imagen})}" class="card-img-top" alt="Plato" style="height: 200px; object-fit: cover;">
                         <div class="card-body">
-                            <h5 class="card-title">Tortilla de Patatas</h5>
-                            <p class="card-text text-muted">Facultad de Informática</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-warning text-dark fs-6">⭐ 4.8</span>
-                                <small class="text-muted">95 votos</small>
+                            <h5 class="card-title " th:text = "${p.nombre}">Nombre plato</h5>
+                            <div class="mb-4"> 
+                                <select class="form-select form-select-lg select-facultad shadow-sm" name="facultadId">
+                                    <option th:each="f : ${p.facultades}" 
+                                            th:value="${f.id}" 
+                                            th:text="${f.nombre}">Facultad</option>
+                                </select>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col plato-card" data-votos="88" data-nombre="Bocadillo de Lomo">
-                    <div class="card h-100 shadow-sm">
-                        <img th:src="@{/img/Bocadillo-Lomo.png}" class="card-img-top" alt="Plato" style="height: 150px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">Bocadillo de Lomo</h5>
-                            <p class="card-text text-muted">Facultad de Derecho</p>
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-warning text-dark fs-6">⭐ 4.5</span>
-                                <small class="text-muted">88 votos</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col plato-card" data-votos="92" data-nombre="Pizza Margarita">
-                    <div class="card h-100 shadow-sm">
-                        <img th:src="@{/img/Pizza-Margarita.png}" class="card-img-top" alt="Plato" style="height: 150px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">Pizza Margarita</h5>
-                            <p class="card-text text-muted">Facultad de Medicina</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-warning text-dark fs-6">⭐ 4.7</span>
-                                <small class="text-muted">92 votos</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                 <div class="col plato-card" data-votos="60" data-nombre="Ensalada César">
-                    <div class="card h-100 shadow-sm">
-                        <img th:src="@{/img/Ensalada-Cesar.png}" class="card-img-top" alt="Plato" style="height: 150px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">Ensalada César</h5>
-                            <p class="card-text text-muted">Facultad de Filosofía</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-secondary text-white fs-6">⭐ 3.5</span>
-                                <small class="text-muted">60 votos</small>
+                                <span class="badge bg-warning text-dark fs-6" th:text="'⭐ ' + ${p.valoracion}">Valoracion</span>
+                                <div>
+                                    <small class="text-muted" th:text="'Votos ' + ${p.votos.size()}"> votos</small>
+                                </div>
+                                
                             </div>
                         </div>
                     </div>

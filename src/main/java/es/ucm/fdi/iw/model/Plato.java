@@ -5,8 +5,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
@@ -21,6 +21,7 @@ public class Plato {
     private String imagen; //Esto es la URL de la imagen para no tener que ponerla 
     private boolean activo; 
     private double precio;
+   
     
     @ManyToMany
     @JoinTable(
@@ -30,8 +31,20 @@ public class Plato {
     )
     @EqualsAndHashCode.Exclude // Para calcular quién es el plato actual, no mira la lista de facultades, mira solo el ID del plato, el nombre, etc...;
     @ToString.Exclude          // Esto hace que no se haga un bucle porque plato llama a facultad y facultad a plato otra vez
-    private List<Facultad> facultades = new ArrayList<>();
+    private Set<Facultad> facultades;
 
     @ElementCollection
-    private List<String> alergenos;
+    private Set<Integer> votos = new HashSet<>();
+
+    @Transient // No se guarda en la BD, se calcula al vuelo
+    public double getValoracion() {
+        if (votos == null || votos.isEmpty()) {
+            return 0.0;
+        }
+        double sum = 0;
+        for (Integer v : votos) {
+            sum += v;
+        }
+        return sum / votos.size();
+    }
 }
