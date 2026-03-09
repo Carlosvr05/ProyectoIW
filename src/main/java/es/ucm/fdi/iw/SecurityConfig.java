@@ -69,6 +69,7 @@ public class SecurityConfig {
 				.requestMatchers("/contacto/**").permitAll()
 				.requestMatchers("/facultades/**").permitAll()
 				.requestMatchers("/carrito/**").permitAll()
+				.requestMatchers("/gestor/**").hasRole("ADMIN")
 				.requestMatchers("/admin/**").hasRole("ADMIN")	   // <-- administration
 				.requestMatchers("/user/**").hasRole("USER")	     // <-- logged-in users
 				.anyRequest().authenticated()

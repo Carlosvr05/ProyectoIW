@@ -34,10 +34,13 @@
                             </svg>
                         </a></li>
                         
-
+                        <!--Esto es para añadir las paginas que ven los usuarios logeados en concreto ADMIN porque es el rol que está puesto-->
                         <th:block th:if="${u}">
                             <li class="nav-item mx-3">
                                 <a class="nav-link" th:if="${u.hasRole('ADMIN')}" th:href="@{/admin/}">Administrar</a>
+                            </li>
+                            <li class="nav-item mx-3">
+                                <a class="nav-link" th:if="${u.hasRole('ADMIN')}" th:href="@{/gestor}">Gestor</a>
                             </li>
 
                             <li class="nav-item mx-2">

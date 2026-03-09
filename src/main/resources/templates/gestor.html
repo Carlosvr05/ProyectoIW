@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <title>IW: Gestor de Platos</title>
+</head>
+
+<body class="d-flex flex-column h-100">
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+
+    <main class="flex-shrink-0">
+        <div class="container mt-5 mb-5">
+            <h1>Gestor de Platos</h1>
+            
+            <div class="card mb-5 mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Añadir Nuevo Plato</h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/gestor/addPlato}" method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nombre" class="form-label">Nombre del Plato</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="precio" class="form-label">Precio (€)</label>
+                                <input type="number" step="0.01" class="form-control" id="precio" name="precio" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="imagen" class="form-label">URL de la Imagen</label>
+                            <input type="text" class="form-control" id="imagen" name="imagen" placeholder="Ej: /img/hamburguesa.png" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Facultades disponibles</label>
+                            <div class="border p-2 rounded bg-light" style="max-height: 150px; overflow-y: auto;">
+                                <div class="form-check" th:each="facultad : ${facultades}">
+                                    <input class="form-check-input" type="checkbox" name="facultadIds" 
+                                           th:value="${facultad.id}" th:id="'fac_' + ${facultad.id}">
+                                    <label class="form-check-label" th:for="'fac_' + ${facultad.id}" 
+                                           th:text="${facultad.nombre}">
+                                        Nombre de la Facultad
+                                    </label>
+                                </div>
+                                <div th:if="${#lists.isEmpty(facultades)}">
+                                    <small class="text-danger">No hay facultades registradas en la base de datos</small>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">Selecciona las facultades en las que se ofrecerá este plato</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">Guardar Plato</button>
+                    </form>
+                </div>
+            </div>
+
+            <h2>Platos en el Sistema</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped mt-3">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Imagen</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Precio</th>
+                            <th>Facultades</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="plato : ${platos}">
+                            <td th:text="${plato.id}">1</td>
+                            <td class="text-center">
+                                <img th:src="${plato.imagen}" alt="Imagen del plato" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                            </td>
+                            <td th:text="${plato.nombre}">Nombre del plato</td>
+                            <td th:text="${plato.descripcion}">Descripción...</td>
+                            <td th:text="${plato.precio + ' €'}">5.00 €</td>
+                            <td>
+                                <ul class="mb-0 ps-3">
+                                    <li th:each="fac : ${plato.facultades}" th:text="${fac.nombre}">Facultad</li>
+                                    <li th:if="${#lists.isEmpty(plato.facultades)}" class="text-muted list-unstyled" style="margin-left: -1rem;">
+                                        <em>Ninguna asignada</em>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td class="text-center">
+                                <form th:action="@{'/gestor/deletePlato/' + ${plato.id}}" method="post" onsubmit="return confirm('¿Estás seguro de que deseas borrar este plato de forma permanente?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Borrar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(platos)}">
+                            <td colspan="7" class="text-center">No hay platos registrados en el sistema</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
+</body>
+</html>

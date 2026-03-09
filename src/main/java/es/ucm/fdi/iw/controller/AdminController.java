@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import es.ucm.fdi.iw.model.Topic;
 import es.ucm.fdi.iw.model.Lorem;
 import es.ucm.fdi.iw.model.Message;
+import es.ucm.fdi.iw.model.Plato;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
 import jakarta.persistence.EntityManager;
@@ -122,4 +123,7 @@ public class AdminController {
     }
     return "{\"admin\": \"populated\"}";
   }
+
+  
+
 }

@@ -37,42 +37,36 @@
 
                             <hr class="my-4">
 
-                            <div class="mb-4">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="bi bi-geo-alt-fill me-1"></i> Selecciona Cafetería:
-                                </label>
-                                <select class="form-select form-select-lg select-facultad shadow-sm" name="facultadId">
-                                    <option th:each="f : ${p.facultades}" 
-                                            th:value="${f.id}" 
-                                            th:text="${f.nombre}">Facultad</option>
-                                </select>
+                            <div th:if="${u == null}" class="alert alert-light border shadow-sm mb-0 p-2 text-center" style="font-size: 0.9rem;">
+                                <a href="/login" class="fw-bold">Inicia sesión</a> para pedir.
                             </div>
 
-                            <div class="row g-3 align-items-center">
-                                <div class="col-4">
-                                    <label class="small text-uppercase fw-bold text-muted d-block mb-1">Cantidad</label>
-                                    <input type="number" class="form-control form-control-lg input-cantidad shadow-sm" 
-                                        value="1" min="1">
+                            <form th:if="${u != null and !u.hasRole('ADMIN')}" th:action="@{'/carrito/add/' + ${p.id}}" method="POST">
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="bi bi-geo-alt-fill me-1"></i> Selecciona Cafetería:
+                                    </label>
+                                    <select class="form-select form-select-lg select-facultad shadow-sm" name="facultadId">
+                                        <option th:each="f : ${p.facultades}" 
+                                                th:value="${f.id}" 
+                                                th:text="${f.nombre}">Facultad</option>
+                                    </select>
                                 </div>
-                                <div class="col-8">
-                                    <label class="small text-uppercase fw-bold text-muted d-block mb-1">&nbsp;</label>
-                                    <div class="acciones d-grid">
-                                        <div th:if="${u == null}" class="alert alert-light border shadow-sm mb-0 p-2 text-center" style="font-size: 0.9rem;">
-                                            <a href="/login" class="fw-bold">Inicia sesión</a> para pedir.
+
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-4">
+                                        <label class="small text-uppercase fw-bold text-muted d-block mb-1">Cantidad</label>
+                                        <input type="number" name="cantidad" class="form-control form-control-lg input-cantidad shadow-sm" value="1" min="1">
+                                    </div>
+                                    <div class="col-8">
+                                        <label class="small text-uppercase fw-bold text-muted d-block mb-1">&nbsp;</label>
+                                        <div class="acciones d-grid">
+                                            <button type="submit" class="btn btn-primary w-100">Añadir al carrito</button>
                                         </div>
-
-                                        <button th:if="${u != null and u.hasRole('ADMIN')}" class="btn btn-outline-danger btn-lg shadow-sm">
-                                            <i class="bi bi-trash"></i> Eliminar
-                                        </button>
-
-                                        <button th:if="${u != null and !u.hasRole('ADMIN')}" 
-                                                class="btn btn-primary btn-lg shadow btn-aniadir"
-                                                th:attr="data-id=${p.id}">
-                                            Añadir por <span class="precio-total" th:text="${p.precio}">0.00</span> €
-                                        </button>
                                     </div>
                                 </div>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>
