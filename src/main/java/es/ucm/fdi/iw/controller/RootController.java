@@ -20,6 +20,7 @@ import es.ucm.fdi.iw.model.Carrito;
 import es.ucm.fdi.iw.model.Facultad;
 import es.ucm.fdi.iw.model.LineaPedido;
 import es.ucm.fdi.iw.model.Message;
+import es.ucm.fdi.iw.model.Pedido;
 import es.ucm.fdi.iw.model.Plato;
 import es.ucm.fdi.iw.model.User;
 import jakarta.persistence.EntityManager;
@@ -195,9 +196,9 @@ public class RootController {
         }
 
         // 2. Crear un nuevo Pedido a partir de los datos del carrito
-        es.ucm.fdi.iw.model.Pedido pedido = new es.ucm.fdi.iw.model.Pedido();
+        Pedido pedido = new Pedido();
         pedido.setCliente(user);
-        pedido.setEstado(es.ucm.fdi.iw.model.Pedido.Estado.SOLICITADO); // Estado inicial
+        pedido.setEstado(Pedido.Estado.SOLICITADO); // Estado inicial
         
         // Pasamos las líneas del carrito al pedido
         pedido.getLineas().addAll(carrito.getItems());
