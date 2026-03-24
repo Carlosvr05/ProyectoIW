@@ -42,6 +42,13 @@
                             <li class="nav-item mx-3">
                                 <a class="nav-link" th:if="${u.hasRole('ADMIN')}" th:href="@{/gestor}">Gestor</a>
                             </li>
+                            <li class="nav-item mx-3">
+                                <div class="navbar-text">
+                                    <label>Saldo </label>
+                                    <span th:if="${u.hasRole('USER')}" th:text="${u.money}" class="badge bg-success">Saldo</span>
+                                </div>
+                                
+                            </li>
 
                             <li class="nav-item mx-2">
                                 <a class="nav-link" th:href="@{/user/{id}(id=${u.id})}">

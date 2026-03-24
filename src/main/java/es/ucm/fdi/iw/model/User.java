@@ -45,6 +45,7 @@ public class User implements Transferable<User.Transfer> {
 
   private String firstName;
   private String lastName;
+  private Double money;
 
   private String colorFavorito;
 

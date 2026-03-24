@@ -12,6 +12,13 @@
     <main class="flex-shrink-0">
         <div class="container mt-5 mb-5">
             <h1 class="mb-4">Mi Carrito</h1>
+            <div th:if="${param.comprahecha != null and param.comprahecha[0] == 'true'}" class="alert alert-success mt-3">
+                ¡Gracias! Tu pedido ha sido procesado correctamente.
+            </div>
+
+            <div th:if="${param.comprahecha != null and param.comprahecha[0] == 'false'}" class="alert alert-warning mt-3">
+                Upss! No tienes dinero suficiente para realizar este pedido.
+            </div>
 
             <div th:if="${carrito == null or #lists.isEmpty(carrito.items)}" class="text-center py-5 bg-white shadow-sm rounded border-0">
                 <h2 class="mt-3 text-secondary">Tu carrito está vacío</h2>

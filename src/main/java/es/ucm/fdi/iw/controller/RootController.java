@@ -27,6 +27,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 /**
  *  Non-authenticated requests only.
@@ -178,40 +180,59 @@ public class RootController {
     }
 
     // --- CONFIRMAR LA COMPRA (CARRITO -> PEDIDO) ---
-    @PostMapping("/carrito/comprar")
+   @PostMapping("/carrito/comprar")
     @Transactional
-    public String realizarPedido(HttpSession session) {
-        User u = (User) session.getAttribute("u");
-        if (u == null) return "redirect:/login";
-
-        // 1. Recuperar el usuario real y el carrito
-        User user = entityManager.find(User.class, u.getId());
-        Carrito carrito = entityManager.createQuery("SELECT c FROM Carrito c WHERE c.cliente.id = :uid", Carrito.class)
-                .setParameter("uid", user.getId())
-                .getSingleResult();
-
-        // Si intentan tramitar un carrito vacío, no hacemos nada
-        if (carrito.getItems().isEmpty()) {
-            return "redirect:/carrito";
+    public String confirmarCompra(HttpSession session) {
+        
+        User sessionUser = (User) session.getAttribute("u");
+        if (sessionUser == null) {
+            return "redirect:/login";
         }
 
-        // 2. Crear un nuevo Pedido a partir de los datos del carrito
-        Pedido pedido = new Pedido();
-        pedido.setCliente(user);
-        pedido.setEstado(Pedido.Estado.SOLICITADO); // Estado inicial
-        
-        // Pasamos las líneas del carrito al pedido
-        pedido.getLineas().addAll(carrito.getItems());
-        
-        entityManager.persist(pedido);
+        // 1. Recuperar el usuario real y el carrito
+        User dbUser = entityManager.find(User.class, sessionUser.getId());
+        Carrito carrito = entityManager.createQuery("SELECT c FROM Carrito c WHERE c.cliente.id = :uid", Carrito.class)
+                .setParameter("uid", dbUser.getId())
+                .getSingleResult();
 
-        // 3. ¡VACIAR EL CARRITO! (Porque ya lo hemos comprado)
-        // Ojo: Solo limpiamos la lista, no borramos las LineaPedido de la base de datos 
-        // porque ahora pertenecen al Pedido.
-        carrito.getItems().clear(); 
+        Double totalcarro = carrito.getTotal();
+        Double dinero = dbUser.getMoney();
 
-        // 4. Redirigir a una página de éxito o al historial de pedidos
-        return "redirect:/inicio?pedidoRealizado=true"; 
+        // 2. Comprobar si tiene dinero suficiente
+        if (totalcarro <= dinero) {
+            
+            // 3. Cobrar al usuario y actualizar la sesión
+            dbUser.setMoney(dinero - totalcarro);
+            session.setAttribute("u", dbUser);
+
+            // 4. Crear el Pedido a partir de los datos del carrito
+            Pedido pedido = new Pedido();
+            pedido.setCliente(dbUser);
+            pedido.setEstado(Pedido.Estado.SOLICITADO); 
+            entityManager.persist(pedido); // Guardamos el pedido primero para que tenga ID
+
+            // 4.1. Creamos esas lineas de pedido y las metemos en un pedido nuevo para que no de error al intentar crear un nuevo pedido
+            for (LineaPedido itemCarrito : carrito.getItems()) {
+                LineaPedido nuevaLinea = new LineaPedido();
+                nuevaLinea.setPlato(itemCarrito.getPlato());
+                nuevaLinea.setCantidad(itemCarrito.getCantidad());
+                // Guardamos el precio al que lo ha comprado (por si en el futuro el admin lo cambia)
+                nuevaLinea.setPrecioUnitario(itemCarrito.getPlato().getPrecio()); 
+                
+                entityManager.persist(nuevaLinea); // Guardamos la línea en la BD
+                pedido.getLineas().add(nuevaLinea); // Se la adjuntamos al pedido definitivo
+            }
+
+            // 5. Vaciar el carrito (ahora sí, las líneas viejas se pueden borrar sin problema)
+            carrito.getItems().clear(); 
+
+            // Redirigimos con éxito
+            return "redirect:/carrito?comprahecha=true"; 
+
+        } else {
+            // Si no tiene dinero, redirigimos con el aviso
+            return "redirect:/carrito?comprahecha=false";
+        }
     }
 
     @PostMapping("/contacto/enviar")
@@ -302,5 +323,8 @@ public class RootController {
         }
         return "redirect:/gestor";
     }
+
+    
+    
 
 }
