@@ -9,71 +9,83 @@
 <body class="d-flex flex-column h-100">
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
-    <main class="flex-shrink-0">
-        <div class="container mt-5 mb-5">
-            <h1 class="mb-4 text-center">Nuestros Platos</h1>
+        <main class="flex-shrink-0">
+            <div class="container mt-5 mb-5">
+                <h1 class="mb-4 text-center">Nuestros Platos</h1>
 
-            <div class="row row-cols-1 row-cols-md-3 g-4">
-
-                <div class="col" th:each="p : ${platos}">
-                    <div class="card h-100 shadow border-0 plato-card overflow-hidden">
-                        
-                        <div class="position-relative">
-                            <img th:src="@{/img/{name}(name=${p.imagen})}" class="card-img-top" th:alt="${p.nombre}" 
-                                style="height: 300px; object-fit: cover;">
-                            <div class="position-absolute top-0 end-0 m-3">
-                                <span class="badge bg-dark fs-4 shadow precio-base" 
-                                    th:attr="data-precio=${p.precio}" 
-                                    th:text="${#numbers.formatDecimal(p.precio, 1, 2) + ' €'}">0.00 €</span>
-                            </div>
-                        </div>
-
-                        <div class="card-body p-4 d-flex flex-column">
-                            <h2 class="card-title fw-bold mb-3" th:text="${p.nombre}">Nombre del Plato</h2>
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    <div class="col" th:each="p : ${platos}">
+                        <div class="card h-100 shadow border-0 plato-card overflow-hidden">
                             
-                            <p class="card-text text-muted fs-5 flex-grow-1" th:text="${p.descripcion}">
-                                Descripción detallada del plato.
-                            </p>
-
-                            <hr class="my-4">
-
-                            <div th:if="${u == null}" class="alert alert-light border shadow-sm mb-0 p-2 text-center" style="font-size: 0.9rem;">
-                                <a href="/login" class="fw-bold">Inicia sesión</a> para pedir.
+                            <div class="position-relative">
+                                <img th:src="@{/plato/{id}/pic(id=${p.id})}" 
+                                    class="card-img-top" 
+                                    th:alt="${p.nombre}" 
+                                    style="height: 300px; object-fit: cover;"
+                                    onerror="this.src='/img/MenUni.png';"> 
+                                    <div class="position-absolute top-0 end-0 m-3">
+                                    <span class="badge bg-dark fs-4 shadow precio-base" 
+                                        th:attr="data-precio=${p.precio}" 
+                                        th:text="${#numbers.formatDecimal(p.precio, 1, 2) + ' €'}">0.00 €</span>
+                                </div>
                             </div>
 
-                            <form th:if="${u != null and !u.hasRole('ADMIN')}" th:action="@{'/carrito/add/' + ${p.id}}" method="POST">
+                            <div class="card-body p-4 d-flex flex-column">
+                                <h2 class="card-title fw-bold mb-3" th:text="${p.nombre}">Nombre del Plato</h2>
                                 
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold text-secondary">
-                                        <i class="bi bi-geo-alt-fill me-1"></i> Selecciona Cafetería:
-                                    </label>
-                                    <select class="form-select form-select-lg select-facultad shadow-sm" name="facultadId">
-                                        <option th:each="f : ${p.facultades}" 
-                                                th:value="${f.id}" 
-                                                th:text="${f.nombre}">Facultad</option>
-                                    </select>
+                                <p class="card-text text-muted fs-5 flex-grow-1" th:text="${p.descripcion}">
+                                    Descripción detallada del plato.
+                                </p>
+
+                                <hr class="my-4">
+
+                                <div th:if="${u == null}" class="alert alert-light border shadow-sm mb-0 p-2 text-center" style="font-size: 0.9rem;">
+                                    <a th:href="@{/login}" class="fw-bold">Inicia sesión</a> para pedir.
                                 </div>
 
-                                <div class="row g-3 align-items-center">
-                                    <div class="col-4">
-                                        <label class="small text-uppercase fw-bold text-muted d-block mb-1">Cantidad</label>
-                                        <input type="number" name="cantidad" class="form-control form-control-lg input-cantidad shadow-sm" value="1" min="1">
+                                <form th:if="${u != null and !u.hasRole('ADMIN')}" 
+                                    th:action="@{/carrito/add/{id}(id=${p.id})}" 
+                                    method="POST">
+                                    
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold text-secondary">
+                                            <i class="bi bi-geo-alt-fill me-1"></i> Selecciona Cafetería:
+                                        </label>
+                                        <select class="form-select form-select-lg select-facultad shadow-sm" name="facultadId">
+                                            <option th:each="f : ${p.facultades}" 
+                                                    th:value="${f.id}" 
+                                                    th:text="${f.nombre}">Facultad</option>
+                                            <option th:if="${#lists.isEmpty(p.facultades)}" disabled selected>No disponible en facultades</option>
+                                        </select>
                                     </div>
-                                    <div class="col-8">
-                                        <label class="small text-uppercase fw-bold text-muted d-block mb-1">&nbsp;</label>
-                                        <div class="acciones d-grid">
-                                            <button type="submit" class="btn btn-primary w-100">Añadir al carrito</button>
+
+                                    <div class="row g-3 align-items-center">
+                                        <div class="col-4">
+                                            <label class="small text-uppercase fw-bold text-muted d-block mb-1">Cantidad</label>
+                                            <input type="number" name="cantidad" class="form-control form-control-lg input-cantidad shadow-sm" value="1" min="1">
+                                        </div>
+                                        <div class="col-8">
+                                            <label class="small text-uppercase fw-bold text-muted d-block mb-1">&nbsp;</label>
+                                            <div class="acciones d-grid">
+                                                <button type="submit" 
+                                                        class="btn btn-primary w-100" 
+                                                        th:disabled="${#lists.isEmpty(p.facultades)}">
+                                                    Añadir al carrito
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
+                                </form>
+                                
+                                <div th:if="${u != null and u.hasRole('ADMIN')}" class="alert alert-info border-0 mb-0 p-2 text-center">
+                                    <small>Vista de Administrador: Los pedidos se gestionan en el panel.</small>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
-        </div>
-    </main>
+        </main>
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 

@@ -25,7 +25,7 @@
 
                         <li class="nav-item"><a class="nav-link" th:href="@{/inicio}">Inicio</a></li>
                         <li class="nav-item"><a class="nav-link" th:href="@{/plato}">Platos</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/ranking}">Ranking Platos</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/plato/ranking}">Ranking Platos</a></li>
                         <li class="nav-item"><a class="nav-link" th:href="@{/facultades}">Facultades</a></li>
                         <li class="nav-item"><a class="nav-link" th:href="@{/contacto}">Contacto</a></li>
                         <li class="nav-item"><a class="nav-link" th:href="@{/carrito}">
@@ -40,7 +40,7 @@
                                 <a class="nav-link" th:if="${u.hasRole('ADMIN')}" th:href="@{/admin/}">Administrar</a>
                             </li>
                             <li class="nav-item mx-3">
-                                <a class="nav-link" th:if="${u.hasRole('ADMIN')}" th:href="@{/gestor}">Gestor</a>
+                                <a class="nav-link" th:if="${u.hasRole('ADMIN')}" th:href="@{/plato/gestor}">Gestor</a>
                             </li>
                             <li class="nav-item mx-3">
                                 <div class="navbar-text">

@@ -18,7 +18,6 @@ public class Plato {
     private long id;
     private String nombre;
     private String descripcion;
-    private String imagen; //Esto es la URL de la imagen para no tener que ponerla 
     private boolean activo; 
     private double precio;
    

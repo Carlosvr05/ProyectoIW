@@ -27,7 +27,11 @@
                 
                 <div class="col plato-card" th:each="p : ${platos}" th:data-votos="${p.votos.size()}" th:data-nombre="${p.nombre}">
                     <div class="card h-100 shadow-sm">
-                        <img th:src="@{/img/{name}(name=${p.imagen})}" class="card-img-top" alt="Plato" style="height: 200px; object-fit: cover;">
+                        <img th:src="@{/plato/{id}/pic(id=${p.id})}" 
+                                    class="card-img-top" 
+                                    th:alt="${p.nombre}" 
+                                    style="height: 300px; object-fit: cover;"
+                                    onerror="this.src='/img/MenUni.png';">
                         <div class="card-body">
                             <h5 class="card-title " th:text = "${p.nombre}">Nombre plato</h5>
                             <div class="mb-4"> 

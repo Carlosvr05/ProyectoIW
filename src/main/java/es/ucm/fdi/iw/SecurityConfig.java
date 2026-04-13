@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -64,14 +65,16 @@ public class SecurityConfig {
 				.requestMatchers("/css/**", "/js/**", "/img/**", "/", "/error").permitAll()
 				.requestMatchers("/api/**").permitAll()            // <-- public api access
 				.requestMatchers("/inicio/**").permitAll()  
-				.requestMatchers("/ranking/**").permitAll()
+				.requestMatchers("/plato/ranking/**").permitAll()
 				.requestMatchers("/plato/**").permitAll() 
 				.requestMatchers("/contacto/**").permitAll()
 				.requestMatchers("/facultades/**").permitAll()
 				.requestMatchers("/carrito/**").permitAll()
-				.requestMatchers("/gestor/**").hasRole("ADMIN")
+				.requestMatchers("/plato/gestor/**").hasRole("ADMIN")
 				.requestMatchers("/admin/**").hasRole("ADMIN")	   // <-- administration
 				.requestMatchers("/user/**").hasRole("USER")	     // <-- logged-in users
+				.requestMatchers(HttpMethod.GET, "/plato/*/pic", "/facultades/*/pic").permitAll()
+				.requestMatchers(HttpMethod.POST, "/plato/*/pic", "/facultades/*/pic").hasRole("ADMIN")
 				.anyRequest().authenticated()
             )
             .formLogin(formLogin -> formLogin
