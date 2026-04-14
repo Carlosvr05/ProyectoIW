@@ -15,6 +15,9 @@ public class LineaPedido{
     @ManyToOne
     private Plato plato; // Muchas líneas de pedido pueden referirse al mismo plato
 
+    @ManyToOne
+    private Facultad facultad; // Cafetería desde la que se pide el plato
+
     private int cantidad;
     private double precioUnitario;
    

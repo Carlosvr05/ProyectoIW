@@ -23,24 +23,24 @@
             </div>
 
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-
-                <div class="col facultad-item">
+                <!-- Bucle para mostrar todas las facultades dinámicamente -->
+                <div class="col facultad-item" th:each="f : ${facultades}">
                     <div class="card h-100 shadow-sm border-0">
                         <div class="position-relative">
                             <span class="position-absolute top-0 end-0 badge bg-success m-2">Abierto</span>
-                            <img th:src="@{/img/fdi.png}" class="card-img-top" alt="Informática" style="height: 200px; object-fit: cover;">
+                            <img th:src="@{/facultades/{id}/pic(id=${f.id})}" class="card-img-top" th:alt="${f.nombre}" style="height: 200px; object-fit: cover;">
                         </div>
                         <div class="card-body d-flex flex-column">
-                            <h5 class="card-title nombre-facultad">Facultad de Informática</h5>
+                            <h5 class="card-title nombre-facultad" th:text="${f.nombre}">Nombre de la Facultad</h5>
                             <p class="card-text text-muted small">
-                                <i class="bi bi-geo-alt-fill"></i> Calle del Prof. José García Santesmases, 9
+                                <i class="bi bi-geo-alt-fill"></i> <span th:text="${f.ubicacion}">Ubicación</span>
                             </p>
-                            <p class="card-text">
-                                Menús variados, opciones veganas y amplia zona de mesas.
+                            <p class="card-text" th:text="${f.descripcion}">
+                                Descripción de la facultad y sus servicios.
                             </p>
                             <ul class="list-unstyled small text-muted mb-3 mt-auto">
-                                <li><strong>Horario:</strong> 08:30 - 19:30</li>
-                                <li><strong>Aforo actual:</strong> Bajo</li>
+                                <li><strong>Horario:</strong> <span th:text="${f.horario}">08:00 - 20:00</span></li>
+                                <li><strong>Aforo actual:</strong> <span th:text="${f.aforo}">Medio</span></li>
                             </ul>
                         </div>
                         <div class="card-footer bg-white border-top-0 pb-3">
@@ -48,57 +48,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="col facultad-item">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="position-relative">
-                            <span class="position-absolute top-0 end-0 badge bg-success m-2">Abierto</span>
-                            <img th:src="@{/img/fdd.png}" class="card-img-top" alt="Derecho" style="height: 200px; object-fit: cover;">
-                        </div>
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title nombre-facultad">Facultad de Derecho</h5>
-                            <p class="card-text text-muted small">
-                                <i class="bi bi-geo-alt-fill"></i> Plaza de Menéndez Pelayo, 4
-                            </p>
-                            <p class="card-text">
-                                Cafetería clásica con terraza exterior y servicio de desayunos.
-                            </p>
-                            <ul class="list-unstyled small text-muted mb-3 mt-auto">
-                                <li><strong>Horario:</strong> 08:00 - 20:00</li>
-                                <li><strong>Aforo actual:</strong> Medio</li>
-                            </ul>
-                        </div>
-                        <div class="card-footer bg-white border-top-0 pb-3">
-                            <a href="#" class="btn btn-primary w-100">Ver Menú</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col facultad-item">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="position-relative">
-                            <span class="position-absolute top-0 end-0 badge bg-success m-2">Abierto</span>
-                            <img th:src="@{/img/fdm.png}" class="card-img-top" alt="Medicina" style="height: 200px; object-fit: cover;">
-                        </div>
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title nombre-facultad">Facultad de Medicina</h5>
-                            <p class="card-text">
-                                <i class="bi bi-geo-alt-fill"></i> Plaza de Ramón y Cajal
-                            </p>
-                            <p class="card-text">
-                                Especialidad en bocadillos y platos combinados a muy buenos precios.
-                            </p>
-                            <ul class="list-unstyled small text-muted mb-3 mt-auto">
-                                <li><strong>Horario:</strong> 08:00 - 18:00</li>
-                                <li><strong>Aforo actual:</strong> Alto</li>
-                            </ul>
-                        </div>
-                        <div class="card-footer bg-white border-top-0 pb-3">
-                            <a href="#" class="btn btn-primary w-100">Ver Menú</a>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
     </main>

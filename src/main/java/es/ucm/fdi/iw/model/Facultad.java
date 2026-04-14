@@ -17,15 +17,21 @@ public class Facultad {
     private long id;
 
     @Column(nullable = false, unique = true)
-    private String nombre; // Ej: "Informática", "Derecho"
+    private String nombre;
 
-    private String ubicacion; // Ej: "Calle Prof. José García Santesmases, 9"
+    private String ubicacion; 
+    
+    private String descripcion; 
+    
+    private String horario; 
+    
+    private String aforo; 
 
-    // Relación Bidireccional: Una facultad tiene muchos platos disponibles
+    // Una facultad tiene muchos platos disponibles
     @ManyToMany(mappedBy = "facultades")
     private List<Plato> platos = new ArrayList<>();
 
-    // Opcional: Para imprimir el nombre directamente en la vista
+    //Para imprimir el nombre directamente en la vista
     @Override
     public String toString() {
         return nombre;

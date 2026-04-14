@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import es.ucm.fdi.iw.model.Carrito;
 import es.ucm.fdi.iw.model.LineaPedido;
 import es.ucm.fdi.iw.model.Pedido;
+import es.ucm.fdi.iw.model.Facultad;
 import es.ucm.fdi.iw.model.Plato;
 import es.ucm.fdi.iw.model.User;
 import jakarta.persistence.EntityManager;
@@ -21,26 +22,27 @@ import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
 @Controller
 @RequestMapping("/carrito")
 public class CarritoController {
-    
+
     @Autowired
     private EntityManager entityManager;
 
+    private static final Logger log = LogManager.getLogger(CarritoController.class);
+
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
-        for (String name : new String[] { "u", "url", "ws", "topics"}) {
-        model.addAttribute(name, session.getAttribute(name));
+        for (String name : new String[] { "u", "url", "ws", "topics" }) {
+            model.addAttribute(name, session.getAttribute(name));
         }
     }
 
-     // --- CONFIRMAR LA COMPRA (CARRITO -> PEDIDO) ---
-    @PostMapping("/carrito/comprar")
+    // --- CONFIRMAR LA COMPRA (CARRITO -> PEDIDO) ---
+    @PostMapping("/comprar")
     @Transactional
     public String confirmarCompra(HttpSession session) {
-        
+
         User sessionUser = (User) session.getAttribute("u");
         if (sessionUser == null) {
             return "redirect:/login";
@@ -57,7 +59,7 @@ public class CarritoController {
 
         // 2. Comprobar si tiene dinero suficiente
         if (totalcarro <= dinero) {
-            
+
             // 3. Cobrar al usuario y actualizar la sesión
             dbUser.setMoney(dinero - totalcarro);
             session.setAttribute("u", dbUser);
@@ -65,26 +67,30 @@ public class CarritoController {
             // 4. Crear el Pedido a partir de los datos del carrito
             Pedido pedido = new Pedido();
             pedido.setCliente(dbUser);
-            pedido.setEstado(Pedido.Estado.SOLICITADO); 
+            pedido.setEstado(Pedido.Estado.SOLICITADO);
             entityManager.persist(pedido); // Guardamos el pedido primero para que tenga ID
 
-            // 4.1. Creamos esas lineas de pedido y las metemos en un pedido nuevo para que no de error al intentar crear un nuevo pedido
+            // 4.1. Creamos esas lineas de pedido y las metemos en un pedido nuevo para que
+            // no de error al intentar crear un nuevo pedido
             for (LineaPedido itemCarrito : carrito.getItems()) {
                 LineaPedido nuevaLinea = new LineaPedido();
                 nuevaLinea.setPlato(itemCarrito.getPlato());
                 nuevaLinea.setCantidad(itemCarrito.getCantidad());
-                // Guardamos el precio al que lo ha comprado (por si en el futuro el admin lo cambia)
-                nuevaLinea.setPrecioUnitario(itemCarrito.getPlato().getPrecio()); 
-                
+                // Guardamos el precio al que lo ha comprado (por si en el futuro el admin lo
+                // cambia)
+                nuevaLinea.setPrecioUnitario(itemCarrito.getPlato().getPrecio());
+                nuevaLinea.setFacultad(itemCarrito.getFacultad()); // Preservamos la facultad elegida
+
                 entityManager.persist(nuevaLinea); // Guardamos la línea en la BD
                 pedido.getLineas().add(nuevaLinea); // Se la adjuntamos al pedido definitivo
             }
 
-            // 5. Vaciar el carrito (ahora sí, las líneas viejas se pueden borrar sin problema)
-            carrito.getItems().clear(); 
+            // 5. Vaciar el carrito (ahora sí, las líneas viejas se pueden borrar sin
+            // problema)
+            carrito.getItems().clear();
 
             // Redirigimos con éxito
-            return "redirect:/carrito?comprahecha=true"; 
+            return "redirect:/carrito?comprahecha=true";
 
         } else {
             // Si no tiene dinero, redirigimos con el aviso
@@ -93,11 +99,12 @@ public class CarritoController {
     }
 
     // --- BORRAR UN PLATO DEL CARRITO ---
-    @PostMapping("/carrito/quitar/{idLinea}")
+    @PostMapping("/quitar/{idLinea}")
     @Transactional
     public String quitarDelCarrito(@PathVariable long idLinea, HttpSession session) {
         User u = (User) session.getAttribute("u");
-        if (u == null) return "redirect:/login";
+        if (u == null)
+            return "redirect:/login";
 
         Carrito carrito = entityManager.createQuery("SELECT c FROM Carrito c WHERE c.cliente.id = :uid", Carrito.class)
                 .setParameter("uid", u.getId())
@@ -105,25 +112,32 @@ public class CarritoController {
 
         // Buscamos la línea dentro del carrito y la eliminamos
         carrito.getItems().removeIf(linea -> linea.getId() == idLinea);
-        
+
         // Al estar en @Transactional, Hibernate actualiza la BD automáticamente
         return "redirect:/carrito";
     }
 
-    @PostMapping("/carrito/add/{idPlato}")
+    @PostMapping("/add/{idPlato}")
     @Transactional
     public String addAlCarrito(
-            @PathVariable long idPlato, 
+            @PathVariable long idPlato,
+            @RequestParam long facultadId, // Recibimos la facultad
             @RequestParam(defaultValue = "1") int cantidad,
             HttpSession session) {
-            
+
         User u = (User) session.getAttribute("u");
         if (u == null) {
-            return "redirect:/login"; 
+            return "redirect:/login";
         }
 
         User user = entityManager.find(User.class, u.getId());
         Plato plato = entityManager.find(Plato.class, idPlato);
+        Facultad facultad = entityManager.find(Facultad.class, facultadId);
+
+        if (plato == null || facultad == null) {
+            log.warn("Intento de añadir plato o facultad inexistente: plato={}, facultad={}", idPlato, facultadId);
+            return "redirect:/plato";
+        }
 
         Carrito carrito;
         try {
@@ -136,30 +150,36 @@ public class CarritoController {
             entityManager.persist(carrito);
         }
 
-        boolean encontrado = false;
-        for (LineaPedido lp : carrito.getItems()) {
-            if (lp.getPlato().getId() == plato.getId()) {
-                // Si ya estaba en el carrito, le sumamos la NUEVA cantidad a la que ya había
-                lp.setCantidad(lp.getCantidad() + cantidad);
-                encontrado = true;
-                break;
-            }
-        }
+        long targetPlatoId = plato.getId();
+        long targetFacultadId = facultad.getId();
 
-        if (!encontrado) {
+        log.info("Añadiendo al carrito: Plato {} de Facultad {}", targetPlatoId, targetFacultadId);
+
+        // Buscamos si ya existe una línea con MISMO plato y MISMA facultad
+        LineaPedido existente = carrito.getItems().stream()
+                .filter(lp -> lp.getPlato() != null && lp.getPlato().getId() == targetPlatoId)
+                .filter(lp -> lp.getFacultad() != null && lp.getFacultad().getId() == targetFacultadId)
+                .findFirst()
+                .orElse(null);
+
+        if (existente != null) {
+            log.info("Se ha encontrado una línea existente (ID {}). Incrementando cantidad en {}", existente.getId(), cantidad);
+            existente.setCantidad(existente.getCantidad() + cantidad);
+        } else {
+            log.info("No existe una línea para esta combinación plato-facultad. Creando nueva LineaPedido.");
             LineaPedido nuevaLinea = new LineaPedido();
             nuevaLinea.setPlato(plato);
-            // Guardamos la cantidad que ha elegido el usuario en la web
-            nuevaLinea.setCantidad(cantidad); 
+            nuevaLinea.setFacultad(facultad); 
+            nuevaLinea.setCantidad(cantidad);
             nuevaLinea.setPrecioUnitario(plato.getPrecio());
-            
-            carrito.getItems().add(nuevaLinea); 
+
+            carrito.getItems().add(nuevaLinea);
         }
 
         return "redirect:/carrito";
     }
 
-    @GetMapping  //Ruta 
+    @GetMapping
     @Transactional
     public String carrito(Model model, HttpSession session) {
         User u = (User) session.getAttribute("u");

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <title>IW: Gestor de Facultades</title>
+</head>
+
+<body class="d-flex flex-column h-100">
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+
+    <main class="flex-shrink-0">
+        <div class="container mt-5 mb-5">
+            <h1 class="mb-4 text-center">Gestor de Facultades</h1>
+
+            <div class="card mb-5 mt-4 shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Añadir Nueva Facultad</h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/facultades/gestor/addFacultad}" method="post" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nombre" class="form-label">Nombre de la Facultad</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre"
+                                    placeholder="Ej: Facultad de Informática" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="ubicacion" class="form-label">Ubicación</label>
+                                <input type="text" class="form-control" id="ubicacion" name="ubicacion"
+                                    placeholder="Calle..." required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="2"
+                                placeholder="Resumen de servicios, menús..." required></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="horario" class="form-label">Horario</label>
+                                <input type="text" class="form-control" id="horario" name="horario"
+                                    placeholder="Ej: 08:30 - 20:00" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="aforo" class="form-label">Aforo Inicial</label>
+                                <select class="form-select" id="aforo" name="aforo" required>
+                                    <option value="Bajo">Bajo</option>
+                                    <option value="Medio">Medio</option>
+                                    <option value="Alto">Alto</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="photo" class="form-label">Imagen de la Facultad</label>
+                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*" required>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">Guardar Facultad</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <h2>Facultades en el Sistema</h2>
+            <div class="table-responsive shadow-sm">
+                <table class="table table-hover table-bordered table-striped mt-3 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th style="width: 120px;">Imagen</th>
+                            <th>Nombre</th>
+                            <th>Ubicación</th>
+                            <th>Info / Horario / Aforo</th>
+                            <th style="width: 150px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="facultad : ${facultades}">
+                            <td th:text="${facultad.id}" class="fw-bold text-center">1</td>
+                            <td class="text-center">
+                                <img th:src="@{/facultades/{id}/pic(id=${facultad.id})}" alt="Foto"
+                                    style="width: 80px; height: 60px; object-fit: cover;"
+                                    class="rounded mb-2 d-block mx-auto shadow-sm"
+                                    onerror="this.src='/img/MenUni.png';">
+
+                                <form th:action="@{/facultades/{id}/pic(id=${facultad.id})}" method="post"
+                                    enctype="multipart/form-data" class="d-flex flex-column align-items-center">
+                                    <input type="file" name="photo" class="form-control form-control-sm mb-1"
+                                        style="max-width: 120px;" required>
+                                    <button type="submit" class="btn btn-primary btn-sm px-3">Actualizar</button>
+                                </form>
+                            </td>
+                            <td>
+                                <strong th:text="${facultad.nombre}">Nombre</strong>
+                            </td>
+                            <td class="small" th:text="${facultad.ubicacion}">Ubicación</td>
+                            <td>
+                                <div class="small">
+                                    <p class="mb-1 text-muted" th:text="${facultad.descripcion}">Descripción...</p>
+                                    <span class="badge bg-light text-dark border">
+                                        <i class="bi bi-clock"></i> <span th:text="${facultad.horario}">Horario</span>
+                                    </span>
+                                    <span class="badge bg-info text-dark border">
+                                        <i class="bi bi-people"></i> Aforo: <span
+                                            th:text="${facultad.aforo}">Medio</span>
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <form th:action="@{/facultades/gestor/deleteFacultad/{id}(id=${facultad.id})}"
+                                    method="post"
+                                    onsubmit="return confirm('¿Eliminar esta facultad permanentemente? Esto no borrará los platos asociados.');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-trash"></i> Borrar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(facultades)}">
+                            <td colspan="6" class="text-center py-4 text-muted">No hay facultades registradas</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
+</body>
+
+</html>
