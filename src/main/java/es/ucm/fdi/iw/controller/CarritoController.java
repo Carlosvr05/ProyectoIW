@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import es.ucm.fdi.iw.model.Carrito;
@@ -22,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 
 @Controller
+@RequestMapping("/carrito")
 public class CarritoController {
     
     @Autowired
@@ -157,7 +159,7 @@ public class CarritoController {
         return "redirect:/carrito";
     }
 
-    @GetMapping("/carrito")  //Ruta 
+    @GetMapping  //Ruta 
     @Transactional
     public String carrito(Model model, HttpSession session) {
         User u = (User) session.getAttribute("u");
