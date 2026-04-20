@@ -111,6 +111,17 @@ public class PlatoController {
         return "plato";
     }
 
+    @GetMapping("/facultad/{id}")
+    public String platosPorFacultad(@PathVariable long id, Model model) {
+        Facultad f = entityManager.find(Facultad.class, id);
+        if (f == null) {
+            return "redirect:/facultades";
+        }
+        model.addAttribute("platos", f.getPlatos());
+        model.addAttribute("facultadSeleccionada", f);
+        return "plato";
+    }
+
     @GetMapping("/ranking")
     public String ranking(Model model) {
         List<Plato> listaplatos = entityManager.createQuery("SELECT p FROM Plato p", Plato.class).getResultList();

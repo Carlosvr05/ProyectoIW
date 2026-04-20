@@ -11,7 +11,7 @@
 
         <main class="flex-shrink-0">
             <div class="container mt-5 mb-5">
-                <h1 class="mb-4 text-center">Nuestros Platos</h1>
+                <h1 class="mb-4 text-center" th:text="${facultadSeleccionada != null ? 'Menú de ' + facultadSeleccionada.nombre : 'Nuestros Platos'}">Nuestros Platos</h1>
 
                 <div class="row row-cols-1 row-cols-md-3 g-4">
                     <div class="col" th:each="p : ${platos}">
@@ -54,7 +54,8 @@
                                         <select class="form-select form-select-lg select-facultad shadow-sm" name="facultadId">
                                             <option th:each="f : ${p.facultades}" 
                                                     th:value="${f.id}" 
-                                                    th:text="${f.nombre}">Facultad</option>
+                                                    th:text="${f.nombre}"
+                                                    th:selected="${facultadSeleccionada != null and f.id == facultadSeleccionada.id}">Facultad</option>
                                             <option th:if="${#lists.isEmpty(p.facultades)}" disabled selected>No disponible en facultades</option>
                                         </select>
                                     </div>
