@@ -6,6 +6,11 @@ INSERT INTO IWUser (id, enabled, roles, username,money, password)
 VALUES (2, TRUE, 'USER', 'b', 1000,
     '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
 
+-- insert gestor de cafeteria (username c, password aa)
+INSERT INTO IWUser (id, enabled, roles, username, password)
+VALUES (3, TRUE, 'USER,GESTOR_CAFETERIA', 'c',
+    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
+
 -- start id numbering from a value that is larger than any assigned above
 ALTER SEQUENCE "PUBLIC"."GEN" RESTART WITH 1024;
 

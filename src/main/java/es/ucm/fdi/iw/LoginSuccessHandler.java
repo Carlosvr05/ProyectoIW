@@ -89,8 +89,9 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         .getResultList();
     session.setAttribute("topics", String.join(",", topics));
 
-    // redirects to 'admin' or 'user/{id}', depending on the user
-    String nextUrl = u.hasRole(User.Role.ADMIN) ? "admin/" : "user/" + u.getId();
+    // redirects to 'admin', 'plato/gestor' or 'user/{id}', depending on the user
+    String nextUrl = u.hasRole(User.Role.ADMIN) ? "admin/" 
+                   : (u.hasRole(User.Role.GESTOR_CAFETERIA) ? "plato/gestor" : "user/" + u.getId());
 
     log.info("LOG IN: {} (id {}) -- session is {}, websocket is {} -- redirected to {}",
         u.getUsername(), u.getId(), session.getId(), ws, nextUrl);

@@ -70,11 +70,12 @@ public class SecurityConfig {
 				.requestMatchers("/contacto/**").permitAll()
 				.requestMatchers("/facultades/**").permitAll()
 				.requestMatchers("/carrito/**").permitAll()
-				.requestMatchers("/plato/gestor/**").hasRole("ADMIN")
+				.requestMatchers("/plato/gestor/**").hasAnyRole("ADMIN", "GESTOR_CAFETERIA")
 				.requestMatchers("/admin/**").hasRole("ADMIN")	   // <-- administration
 				.requestMatchers("/user/**").hasRole("USER")	     // <-- logged-in users
 				.requestMatchers(HttpMethod.GET, "/plato/*/pic", "/facultades/*/pic").permitAll()
-				.requestMatchers(HttpMethod.POST, "/plato/*/pic", "/facultades/*/pic").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.POST, "/facultades/*/pic").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.POST, "/plato/*/pic").hasAnyRole("ADMIN", "GESTOR_CAFETERIA")
 				.anyRequest().authenticated()
             )
             .formLogin(formLogin -> formLogin

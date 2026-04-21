@@ -82,8 +82,8 @@ public class PlatoController {
         }
         
         User requester = (User) userInSession;
-        if (!requester.hasRole(User.Role.ADMIN)) {
-            log.warn("Usuario {} intentó subir foto sin ser ADMIN", requester.getUsername());
+        if (!requester.hasRole(User.Role.ADMIN) && !requester.hasRole(User.Role.GESTOR_CAFETERIA)) {
+            log.warn("Usuario {} intentó subir foto sin ser ADMIN o GESTOR_CAFETERIA", requester.getUsername());
             throw new UserController.NoEsTuPerfilException();
         }
 

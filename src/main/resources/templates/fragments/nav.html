@@ -3,7 +3,7 @@
 
 <head>
     <title>Nav fragment - rest intentionally left empty</title>
-    
+
 </head>
 
 <body class="d-flex flex-column h-100">
@@ -14,12 +14,15 @@
             <div class="container-fluid">
                 <!-- nombre del sitio; es un enlace que lleva a la página ppal -->
                 <a class="navbar-brand" th:href="@{/}" href="/">
-                    <img th:src="@{/img/MenUni.png}" src="/img/logo.png" alt="logo IW" width="140" height="50" class="d-inline-block align-text-top">
+                    <img th:src="@{/img/MenUni.png}" src="/img/logo.png" alt="logo IW" width="140" height="50"
+                        class="d-inline-block align-text-top">
                 </a>
                 <!-- menu hamburguesa si no cabe todo -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto">
 
@@ -29,28 +32,34 @@
                         <li class="nav-item"><a class="nav-link" th:href="@{/facultades}">Facultades</a></li>
                         <li class="nav-item"><a class="nav-link" th:href="@{/contacto}">Contacto</a></li>
                         <li class="nav-item"><a class="nav-link" th:href="@{/carrito}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cart-fill" viewBox="0 0 16 16">
-                            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                                class="bi bi-cart-fill" viewBox="0 0 16 16">
+                                <path
+                                    d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
                             </svg>
                         </a></li>
-                        
+
                         <!--Esto es para añadir las paginas que ven los usuarios logeados en concreto ADMIN porque es el rol que está puesto-->
                         <th:block th:if="${u}">
                             <li class="nav-item mx-3">
                                 <a class="nav-link" th:if="${u.hasRole('ADMIN')}" th:href="@{/admin/}">Administrar</a>
                             </li>
                             <li class="nav-item mx-3">
-                                <a class="nav-link text-primary fw-bold" th:if="${u.hasRole('ADMIN')}" th:href="@{/plato/gestor}">Gestor Platos</a>
+                                <a class="nav-link text-primary fw-bold"
+                                    th:if="${u.hasRole('ADMIN') or u.hasRole('GESTOR_CAFETERIA')}"
+                                    th:href="@{/plato/gestor}">Gestor Platos</a>
                             </li>
                             <li class="nav-item mx-3">
-                                <a class="nav-link text-success fw-bold" th:if="${u.hasRole('ADMIN')}" th:href="@{/facultades/gestor}">Gestor Facultades</a>
+                                <a class="nav-link text-success fw-bold" th:if="${u.hasRole('ADMIN')}"
+                                    th:href="@{/facultades/gestor}">Gestor Facultades</a>
                             </li>
                             <li class="nav-item mx-3">
                                 <div class="navbar-text">
                                     <label>Saldo </label>
-                                    <span th:if="${u.hasRole('USER')}" th:text="${u.money}" class="badge bg-success">Saldo</span>
+                                    <span th:if="${u.hasRole('USER')}" th:text="${u.money}"
+                                        class="badge bg-success">Saldo</span>
                                 </div>
-                                
+
                             </li>
 
                             <li class="nav-item mx-2">
@@ -61,7 +70,9 @@
                             </li>
                             <li class="nav-item align-self-center me-4">
                                 <button type="button" class="btn btn-outline-primary btn-sm position-relative">
-                                    ✉️ <span id="nav-unread" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">+99 <span class="visually-hidden">unread messages</span></span>
+                                    ✉️ <span id="nav-unread"
+                                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">+99
+                                        <span class="visually-hidden">unread messages</span></span>
                                 </button>
                             </li>
                             <li class="nav-item align-self-center">
@@ -92,6 +103,13 @@
                                     <input type="hidden" name="username" value="b">
                                     <input type="hidden" name="password" value="aa">
                                     <button type="submit" class="btn btn-outline-danger btn-sm">b</button>
+                                </form>
+                            </li>
+                            <li class="nav-item debug align-self-center" th:if="${application.debug}">
+                                <form class="d-flex" th:action="@{/login}" method="post">
+                                    <input type="hidden" name="username" value="c">
+                                    <input type="hidden" name="password" value="aa">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">c</button>
                                 </form>
                             </li>
                         </th:block>
