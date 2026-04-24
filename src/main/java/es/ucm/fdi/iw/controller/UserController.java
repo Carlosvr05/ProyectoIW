@@ -119,6 +119,13 @@ public class UserController {
   public String index(@PathVariable long id, Model model, HttpSession session) {
     User target = entityManager.find(User.class, id);
     model.addAttribute("user", target);
+    
+    // Obtener los pedidos del usuario
+    List<?> pedidos = entityManager.createQuery("SELECT p FROM Pedido p WHERE p.cliente.id = :uid")
+        .setParameter("uid", target.getId())
+        .getResultList();
+    model.addAttribute("pedidos", pedidos);
+    
     return "user";
   }
 

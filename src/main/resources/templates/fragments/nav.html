@@ -38,20 +38,15 @@
                                     d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
                             </svg>
                         </a></li>
+                        <!-- Eliminado el icono sutil de aquí -->
 
                         <!--Esto es para añadir las paginas que ven los usuarios logeados en concreto ADMIN porque es el rol que está puesto-->
                         <th:block th:if="${u}">
-                            <li class="nav-item mx-3">
-                                <a class="nav-link" th:if="${u.hasRole('ADMIN')}" th:href="@{/admin/}">Administrar</a>
-                            </li>
-                            <li class="nav-item mx-3">
-                                <a class="nav-link text-primary fw-bold"
-                                    th:if="${u.hasRole('ADMIN') or u.hasRole('GESTOR_CAFETERIA')}"
-                                    th:href="@{/plato/gestor}">Gestor Platos</a>
-                            </li>
-                            <li class="nav-item mx-3">
-                                <a class="nav-link text-success fw-bold" th:if="${u.hasRole('ADMIN')}"
-                                    th:href="@{/facultades/gestor}">Gestor Facultades</a>
+                            <li class="nav-item mx-3 d-flex align-items-center">
+                                <a class="btn btn-primary btn-sm fw-bold text-white shadow-sm" 
+                                   th:href="@{/user/{id}(id=${u.id})} + '#pedidos'">
+                                   Mis QRs 📱
+                                </a>
                             </li>
                             <li class="nav-item mx-3">
                                 <div class="navbar-text">
@@ -59,7 +54,6 @@
                                     <span th:if="${u.hasRole('USER')}" th:text="${u.money}"
                                         class="badge bg-success">Saldo</span>
                                 </div>
-
                             </li>
 
                             <li class="nav-item mx-2">
