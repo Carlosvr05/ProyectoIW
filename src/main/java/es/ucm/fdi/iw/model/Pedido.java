@@ -32,4 +32,10 @@ public class Pedido{
 
     @Enumerated(EnumType.STRING)
     private Estado estado;
+
+    public double getTotal() {
+        return lineas.stream()
+                .mapToDouble(l -> l.getCantidad() * l.getPrecioUnitario())
+                .sum();
+    }
 }

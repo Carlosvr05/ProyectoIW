@@ -90,6 +90,51 @@
                                 </div>
                                 
                                 <p class="small text-muted mt-2">Muestra este código en la cafetería para recoger tu pedido.</p>
+                                
+                                <!-- Botón para ver detalles -->
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-2 w-100 fw-bold" data-bs-toggle="modal" th:attr="data-bs-target='#pedidoModal' + ${pedido.id}">
+                                    <i class="bi bi-list-ul"></i> Ver detalles del pedido
+                                </button>
+                                
+                                <!-- Modal de Detalles del Pedido -->
+                                <div class="modal fade" th:id="'pedidoModal' + ${pedido.id}" tabindex="-1" aria-labelledby="pedidoModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content text-start">
+                                            <div class="modal-header bg-primary text-white">
+                                                <h5 class="modal-title" th:id="'pedidoModalLabel' + ${pedido.id}">
+                                                    <i class="bi bi-receipt"></i> Detalles del Pedido #<span th:text="${pedido.id}"></span>
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body p-0">
+                                                <div class="list-group list-group-flush">
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center p-3" th:each="linea : ${pedido.lineas}">
+                                                        <div>
+                                                            <h6 class="mb-1 fw-bold text-dark" th:text="${linea.plato.nombre}">Nombre Plato</h6>
+                                                            <small class="text-muted d-block" th:if="${linea.facultad != null}">
+                                                                <i class="bi bi-shop"></i> <span th:text="${linea.facultad.nombre}">Cafetería</span>
+                                                            </small>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <span class="badge bg-secondary rounded-pill fs-6">
+                                                                <span th:text="${linea.cantidad}"></span> x <span th:text="${#numbers.formatDecimal(linea.precioUnitario, 1, 2)}"></span>€
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="bg-light p-3 border-top d-flex justify-content-between align-items-center">
+                                                    <span class="fs-5 fw-bold text-dark">Total:</span>
+                                                    <span class="fs-4 fw-bold text-primary"><span th:text="${#numbers.formatDecimal(pedido.total, 1, 2)}"></span>€</span>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-0">
+                                                <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Cerrar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Fin Modal -->
+
                             </div>
                         </div>
                     </div>
