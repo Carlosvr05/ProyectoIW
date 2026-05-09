@@ -64,29 +64,32 @@ public class CarritoController {
             dbUser.setMoney(dinero - totalcarro);
             session.setAttribute("u", dbUser);
 
-            // 4. Crear el Pedido a partir de los datos del carrito
-            Pedido pedido = new Pedido();
-            pedido.setCliente(dbUser);
-            pedido.setEstado(Pedido.Estado.SOLICITADO);
-            entityManager.persist(pedido); // Guardamos el pedido primero para que tenga ID
-
-            // 4.1. Creamos esas lineas de pedido y las metemos en un pedido nuevo para que
-            // no de error al intentar crear un nuevo pedido
+            // 4. Agrupar las líneas de pedido por facultad
+            java.util.Map<Facultad, java.util.List<LineaPedido>> porFacultad = new java.util.HashMap<>();
             for (LineaPedido itemCarrito : carrito.getItems()) {
-                LineaPedido nuevaLinea = new LineaPedido();
-                nuevaLinea.setPlato(itemCarrito.getPlato());
-                nuevaLinea.setCantidad(itemCarrito.getCantidad());
-                // Guardamos el precio al que lo ha comprado (por si en el futuro el admin lo
-                // cambia)
-                nuevaLinea.setPrecioUnitario(itemCarrito.getPlato().getPrecio());
-                nuevaLinea.setFacultad(itemCarrito.getFacultad()); // Preservamos la facultad elegida
-
-                entityManager.persist(nuevaLinea); // Guardamos la línea en la BD
-                pedido.getLineas().add(nuevaLinea); // Se la adjuntamos al pedido definitivo
+                porFacultad.computeIfAbsent(itemCarrito.getFacultad(), k -> new java.util.ArrayList<>()).add(itemCarrito);
             }
 
-            // 5. Vaciar el carrito (ahora sí, las líneas viejas se pueden borrar sin
-            // problema)
+            // Crear un Pedido distinto por cada facultad
+            for (java.util.Map.Entry<Facultad, java.util.List<LineaPedido>> entry : porFacultad.entrySet()) {
+                Pedido pedido = new Pedido();
+                pedido.setCliente(dbUser);
+                pedido.setEstado(Pedido.Estado.SOLICITADO);
+                entityManager.persist(pedido); // Guardamos para ID
+
+                for (LineaPedido itemCarrito : entry.getValue()) {
+                    LineaPedido nuevaLinea = new LineaPedido();
+                    nuevaLinea.setPlato(itemCarrito.getPlato());
+                    nuevaLinea.setCantidad(itemCarrito.getCantidad());
+                    nuevaLinea.setPrecioUnitario(itemCarrito.getPlato().getPrecio());
+                    nuevaLinea.setFacultad(itemCarrito.getFacultad());
+
+                    entityManager.persist(nuevaLinea);
+                    pedido.getLineas().add(nuevaLinea);
+                }
+            }
+
+            // 5. Vaciar el carrito
             carrito.getItems().clear();
 
             // Redirigimos con éxito
@@ -123,7 +126,8 @@ public class CarritoController {
             @PathVariable long idPlato,
             @RequestParam long facultadId, // Recibimos la facultad
             @RequestParam(defaultValue = "1") int cantidad,
-            HttpSession session) {
+            HttpSession session,
+            jakarta.servlet.http.HttpServletRequest request) {
 
         User u = (User) session.getAttribute("u");
         if (u == null) {
@@ -176,7 +180,8 @@ public class CarritoController {
             carrito.getItems().add(nuevaLinea);
         }
 
-        return "redirect:/carrito";
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/plato");
     }
 
     @GetMapping

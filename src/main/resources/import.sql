@@ -61,6 +61,6 @@ INSERT INTO plato_facultades (plato_id, facultad_id) VALUES (103, 5);
 
 -- Votos de los platos
 
-INSERT INTO plato_votos (plato_id, votos) VALUES (100, 5);
-INSERT INTO plato_votos (plato_id, votos) VALUES (100, 4);
-INSERT INTO plato_votos (plato_id, votos) VALUES (100, 5);
+INSERT INTO valoracion (id, puntuacion, plato_id, facultad_id, user_id) VALUES (200, 5, 100, 1, 1);
+INSERT INTO valoracion (id, puntuacion, plato_id, facultad_id, user_id) VALUES (201, 4, 100, 1, 2);
+INSERT INTO valoracion (id, puntuacion, plato_id, facultad_id, user_id) VALUES (202, 5, 100, 1, 3);

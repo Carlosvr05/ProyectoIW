@@ -205,4 +205,71 @@ public class ApiController {
           .map(Message::toTransfer).toArray()
       ));
   }
+
+  @GetMapping("/plato/{platoId}/facultad/{facultadId}/rating")
+  @ResponseBody
+  public Map<String, Object> getRating(@PathVariable long platoId, @PathVariable long facultadId, HttpSession session) {
+      java.util.List<es.ucm.fdi.iw.model.Valoracion> valoraciones = entityManager.createQuery(
+          "SELECT v FROM Valoracion v WHERE v.plato.id = :pid AND v.facultad.id = :fid", es.ucm.fdi.iw.model.Valoracion.class)
+          .setParameter("pid", platoId)
+          .setParameter("fid", facultadId)
+          .getResultList();
+      
+      double sum = 0;
+      for (es.ucm.fdi.iw.model.Valoracion v : valoraciones) {
+          sum += v.getPuntuacion();
+      }
+      double average = valoraciones.isEmpty() ? 0.0 : sum / valoraciones.size();
+      
+      User u = (User) session.getAttribute("u");
+      Integer userVote = null;
+      if (u != null) {
+          for (es.ucm.fdi.iw.model.Valoracion v : valoraciones) {
+              if (v.getUser().getId() == u.getId()) {
+                  userVote = v.getPuntuacion();
+                  break;
+              }
+          }
+      }
+      
+      java.util.Map<String, Object> response = new java.util.HashMap<>();
+      response.put("average", Math.round(average * 10.0) / 10.0);
+      response.put("count", valoraciones.size());
+      response.put("userVote", userVote == null ? -1 : userVote);
+      return response;
+  }
+
+  @PostMapping("/plato/{platoId}/facultad/{facultadId}/vote")
+  @ResponseBody
+  @Transactional
+  public Map<String, Object> submitVote(@PathVariable long platoId, @PathVariable long facultadId, @RequestBody Map<String, Integer> payload, HttpSession session) {
+      User u = (User) session.getAttribute("u");
+      if (u == null) {
+          return java.util.Map.of("error", "No autenticado");
+      }
+      
+      int puntuacion = payload.get("puntuacion");
+      
+      // Comprobar si ya votó
+      java.util.List<es.ucm.fdi.iw.model.Valoracion> existentes = entityManager.createQuery(
+          "SELECT v FROM Valoracion v WHERE v.plato.id = :pid AND v.facultad.id = :fid AND v.user.id = :uid", es.ucm.fdi.iw.model.Valoracion.class)
+          .setParameter("pid", platoId)
+          .setParameter("fid", facultadId)
+          .setParameter("uid", u.getId())
+          .getResultList();
+          
+      if (!existentes.isEmpty()) {
+          return java.util.Map.of("error", "Ya has votado");
+      }
+      
+      es.ucm.fdi.iw.model.Valoracion nuevaVal = new es.ucm.fdi.iw.model.Valoracion();
+      nuevaVal.setUser(entityManager.find(User.class, u.getId()));
+      nuevaVal.setPlato(entityManager.find(es.ucm.fdi.iw.model.Plato.class, platoId));
+      nuevaVal.setFacultad(entityManager.find(es.ucm.fdi.iw.model.Facultad.class, facultadId));
+      nuevaVal.setPuntuacion(puntuacion);
+      
+      entityManager.persist(nuevaVal);
+      
+      return java.util.Map.of("success", true);
+  }
 }

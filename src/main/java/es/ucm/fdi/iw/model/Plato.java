@@ -32,18 +32,5 @@ public class Plato {
     @ToString.Exclude          // Esto hace que no se haga un bucle porque plato llama a facultad y facultad a plato otra vez
     private Set<Facultad> facultades;
 
-    @ElementCollection
-    private Set<Integer> votos = new HashSet<>();
 
-    @Transient // No se guarda en la BD, se calcula al vuelo
-    public double getValoracion() {
-        if (votos == null || votos.isEmpty()) {
-            return 0.0;
-        }
-        double sum = 0;
-        for (Integer v : votos) {
-            sum += v;
-        }
-        return sum / votos.size();
-    }
 }

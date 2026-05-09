@@ -40,8 +40,14 @@
                         </a></li>
                         <!-- Eliminado el icono sutil de aquí -->
 
-                        <!--Esto es para añadir las paginas que ven los usuarios logeados en concreto ADMIN porque es el rol que está puesto-->
+                        <!-- Paginas para usuarios logueados y administradores -->
                         <th:block th:if="${u}">
+                            <li class="nav-item mx-2 d-flex align-items-center" th:if="${u.hasRole('ADMIN') or u.hasRole('GESTOR_CAFETERIA')}">
+                                <a class="nav-link fw-bold text-success" th:href="@{/facultades/gestor}">Gestor Facultades</a>
+                            </li>
+                            <li class="nav-item mx-2 d-flex align-items-center" th:if="${u.hasRole('ADMIN') or u.hasRole('GESTOR_CAFETERIA')}">
+                                <a class="nav-link fw-bold text-success" th:href="@{/plato/gestor}">Gestor Platos</a>
+                            </li>
                             <li class="nav-item mx-3 d-flex align-items-center">
                                 <a class="btn btn-primary btn-sm fw-bold text-white shadow-sm" 
                                    th:href="@{/user/{id}(id=${u.id})} + '#pedidos'">

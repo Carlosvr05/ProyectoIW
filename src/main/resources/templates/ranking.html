@@ -15,9 +15,6 @@
             
             <div class="mb-4">
                 <span class="me-2 fw-bold">Ordenar por:</span>
-                <button class="btn btn-outline-primary btn-sm me-2" onclick="ordenarPlatos('votos')">
-                    ⭐ Más votados
-                </button>
                 <button class="btn btn-outline-secondary btn-sm" onclick="ordenarPlatos('nombre')">
                     🔤 Nombre (A-Z)
                 </button>
@@ -25,7 +22,7 @@
 
             <div id="contenedor-platos" class="row row-cols-1 row-cols-md-3 g-4 platos">
                 
-                <div class="col plato-card" th:each="p : ${platos}" th:data-votos="${p.votos.size()}" th:data-nombre="${p.nombre}">
+                <div class="col plato-card" th:each="p : ${platos}" th:data-nombre="${p.nombre}">
                     <div class="card h-100 shadow-sm">
                         <img th:src="@{/plato/{id}/pic(id=${p.id})}" 
                                     class="card-img-top" 
@@ -34,19 +31,32 @@
                                     onerror="this.src='/img/MenUni.png';">
                         <div class="card-body">
                             <h5 class="card-title " th:text = "${p.nombre}">Nombre plato</h5>
-                            <div class="mb-4"> 
-                                <select class="form-select form-select-lg select-facultad shadow-sm" name="facultadId">
+                            <div class="mb-3"> 
+                                <select class="form-select form-select-lg select-facultad shadow-sm" name="facultadId" th:data-plato-id="${p.id}" onchange="actualizarValoracion(this)">
                                     <option th:each="f : ${p.facultades}" 
                                             th:value="${f.id}" 
                                             th:text="${f.nombre}">Facultad</option>
                                 </select>
                             </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-warning text-dark fs-6" th:text="'⭐ ' + ${p.valoracion}">Valoracion</span>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-warning text-dark fs-6 val-badge" th:id="'val-badge-' + ${p.id}">Cargando...</span>
                                 <div>
-                                    <small class="text-muted" th:text="'Votos ' + ${p.votos.size()}"> votos</small>
+                                    <small class="text-muted val-count" th:id="'val-count-' + ${p.id}">...</small>
                                 </div>
-                                
+                            </div>
+                            <!-- Widget de estrellas (Slider JS) -->
+                            <div class="vote-widget text-center" th:id="'vote-widget-' + ${p.id}" style="display: none; user-select: none; touch-action: none;">
+                                <div class="star-slider" th:data-plato="${p.id}" style="display: inline-flex; cursor: grab; font-size: 2.5rem; color: #ddd;">
+                                    <span class="star" style="transition: all 0.1s;">★</span>
+                                    <span class="star" style="transition: all 0.1s;">★</span>
+                                    <span class="star" style="transition: all 0.1s;">★</span>
+                                    <span class="star" style="transition: all 0.1s;">★</span>
+                                    <span class="star" style="transition: all 0.1s;">★</span>
+                                </div>
+                                <div class="text-muted small mt-1"><i class="bi bi-arrows-collapse"></i> Desliza para valorar</div>
+                            </div>
+                            <div class="vote-success text-success text-center mt-2 fw-bold" th:id="'vote-success-' + ${p.id}" style="display: none;">
+                                Tu voto: <span class="user-vote-val"></span> ⭐
                             </div>
                         </div>
                     </div>
@@ -58,26 +68,151 @@
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
-    <script>
+    <script th:inline="javascript">
+        // Token CSRF para las peticiones POST
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Cargar valoraciones iniciales para todos los selects
+            document.querySelectorAll('.select-facultad').forEach(select => {
+                actualizarValoracion(select);
+            });
+            setupStarSliders();
+        });
+
+        function setupStarSliders() {
+            document.querySelectorAll('.star-slider').forEach(slider => {
+                if(slider.dataset.initialized) return;
+                slider.dataset.initialized = 'true';
+                
+                let isDragging = false;
+                let currentRating = 0;
+
+                const updateStars = (clientX) => {
+                    const rect = slider.getBoundingClientRect();
+                    let x = clientX - rect.left;
+                    let width = rect.width;
+                    if (x < 0) x = 0;
+                    if (x > width) x = width;
+                    
+                    let rating = Math.ceil((x / width) * 5);
+                    if (rating === 0 && x > 0) rating = 1;
+                    if (clientX === -999) rating = 0; // reset
+                    currentRating = rating;
+
+                    const stars = slider.querySelectorAll('.star');
+                    stars.forEach((star, index) => {
+                        if (index < rating) {
+                            star.style.color = '#ffc107'; 
+                            star.style.transform = 'scale(1.15)';
+                        } else {
+                            star.style.color = '#ddd'; 
+                            star.style.transform = 'scale(1)';
+                        }
+                    });
+                };
+
+                slider.addEventListener('pointerdown', (e) => {
+                    isDragging = true;
+                    slider.setPointerCapture(e.pointerId);
+                    slider.style.cursor = 'grabbing';
+                    updateStars(e.clientX);
+                });
+
+                slider.addEventListener('pointermove', (e) => {
+                    if (isDragging || e.pointerType === 'mouse') {
+                        updateStars(e.clientX);
+                    }
+                });
+
+                slider.addEventListener('pointerleave', (e) => {
+                    if (!isDragging) {
+                        currentRating = 0;
+                        updateStars(-999);
+                    }
+                });
+
+                slider.addEventListener('pointerup', (e) => {
+                    if (isDragging) {
+                        isDragging = false;
+                        slider.releasePointerCapture(e.pointerId);
+                        slider.style.cursor = 'grab';
+                        
+                        if (currentRating > 0) {
+                            votar(slider, currentRating);
+                        }
+                    }
+                });
+            });
+        }
+
+        function actualizarValoracion(selectElement) {
+            const platoId = selectElement.getAttribute('data-plato-id');
+            const facultadId = selectElement.value;
+            if (!facultadId) return;
+
+            fetch(`/api/plato/${platoId}/facultad/${facultadId}/rating`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById(`val-badge-${platoId}`).innerText = `⭐ ${data.average}`;
+                    document.getElementById(`val-count-${platoId}`).innerText = `${data.count} votos`;
+
+                    const widget = document.getElementById(`vote-widget-${platoId}`);
+                    const successDiv = document.getElementById(`vote-success-${platoId}`);
+                    
+                    // Si el usuario no está logueado o ya ha votado, no mostramos las estrellas
+                    // Supongamos que si userVote == -1, no ha votado.
+                    // Si no está logueado, userVote será -1 también pero luego al votar dará error.
+                    if (data.userVote > 0) {
+                        widget.style.display = 'none';
+                        successDiv.style.display = 'block';
+                        successDiv.querySelector('.user-vote-val').innerText = data.userVote;
+                    } else {
+                        // Solo enseñamos el widget si application.u existe... 
+                        // pero la lógica la controla el endpoint (daría error si no logueado)
+                        widget.style.display = 'block';
+                        successDiv.style.display = 'none';
+                    }
+                })
+                .catch(err => console.error("Error cargando valoracion:", err));
+        }
+
+        function votar(slider, puntuacion) {
+            const platoId = slider.getAttribute('data-plato');
+            const selectElement = document.querySelector(`.select-facultad[data-plato-id="${platoId}"]`);
+            const facultadId = selectElement.value;
+
+            fetch(`/api/plato/${platoId}/facultad/${facultadId}/vote`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                },
+                body: JSON.stringify({ puntuacion: puntuacion })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    // Refrescar los datos visualmente
+                    actualizarValoracion(selectElement);
+                }
+            })
+            .catch(err => console.error("Error votando:", err));
+        }
+
         function ordenarPlatos(criterio) {
-            // 1. Seleccionamos el contenedor y las tarjetas
             const contenedor = document.getElementById('contenedor-platos');
             const tarjetas = Array.from(contenedor.getElementsByClassName('plato-card'));
 
-            // 2. Ordenamos el array de tarjetas
             tarjetas.sort((a, b) => {
-                if (criterio === 'votos') {
-                    // De mayor a menor (descendente)
-                    // parseInt convierte el texto "95" en número 95
-                    return parseInt(b.dataset.votos) - parseInt(a.dataset.votos);
-                } else if (criterio === 'nombre') {
-                    // Alfabético (A-Z)
+                if (criterio === 'nombre') {
                     return a.dataset.nombre.localeCompare(b.dataset.nombre);
                 }
             });
 
-            // 3. Volvemos a añadir las tarjetas al contenedor en el nuevo orden
-            // (Esto mueve los elementos en el HTML, no los duplica)
             tarjetas.forEach(tarjeta => contenedor.appendChild(tarjeta));
         }
     </script>
