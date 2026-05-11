@@ -5,11 +5,11 @@ MenUni es una aplicación web diseñada para la comunidad universitaria de la Un
 
 El sistema cuenta con los siguientes roles de usuario:
 
-Usuario/Cliente: Dispone de un monedero o saldo virtual. Puede ver los platos disponibles, añadirlos a su carrito y comprarlos siempre que disponga de saldo suficiente.
+**Usuario/Cliente**: Dispone de un monedero o saldo virtual. Puede ver los platos disponibles, añadirlos a su carrito y comprarlos siempre que disponga de saldo suficiente.
 
-Administrador: Tiene acceso a un panel de control global para la gestión del catálogo de productos y el control de los mensajes enviados por otros usuarios.
+**Administrador**: Tiene acceso a un panel de control global para la gestión del catálogo de productos y el control de los mensajes enviados por otros usuarios.
 
-Gestor de la Cafetería: Encargado de la administración específica del catálogo de comida, permitiendo insertar nuevos platos al menú o eliminar aquellos que ya no estén disponibles.
+**Gestor de la Cafetería**: Encargado de la administración específica del catálogo de comida, permitiendo insertar nuevos platos al menú o eliminar aquellos que ya no estén disponibles.
 
 ## Estructura de la Base de Datos
 ![Esquema de la Base de Datos](bd.png)
