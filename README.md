@@ -1,11 +1,15 @@
 # MenUni - Menús Universitarios UCM
 
-## Descripción del Proyecto
-**MenUni** es una aplicación web diseñada para la comunidad universitaria de la Universidad Complutense de Madrid (UCM). El objetivo principal es permitir a los usuarios consultar y realizar pedidos de los diferentes platos que ofrecen las cafeterías de las distintas facultades de la universidad y asi ahorrar mucho tiempo pudiendo pedir los platos en la facultad que necesites y justo antes de que se acaben las clases.
+Descripción del Proyecto
+MenUni es una aplicación web diseñada para la comunidad universitaria de la Universidad Complutense de Madrid (UCM). El objetivo principal es permitir a los usuarios consultar y realizar pedidos de los platos ofrecidos por las cafeterías de las diferentes facultades, permitiendo ahorrar tiempo al realizar pedidos justo antes de finalizar las clases.
 
-El sistema cuenta con varios roles de usuario:
-* **Usuario/Cliente:** Dispone de un monedero o saldo virtual. Puede ver los platos disponibles, añadirlos a su carrito y comprarlos siempre y cuando disponga de saldo suficiente.
-* **Administrador / Gestor:** Tiene acceso a un panel de control dedicado (vista de gestor) desde el cual puede administrar el catálogo de comida. Puede insertar nuevos platos al menú o eliminar aquellos que ya no estén disponibles.
+El sistema cuenta con los siguientes roles de usuario:
+
+Usuario/Cliente: Dispone de un monedero o saldo virtual. Puede ver los platos disponibles, añadirlos a su carrito y comprarlos siempre que disponga de saldo suficiente.
+
+Administrador: Tiene acceso a un panel de control global para la gestión del catálogo de productos y el control de los mensajes enviados por otros usuarios.
+
+Gestor de la Cafetería: Encargado de la administración específica del catálogo de comida, permitiendo insertar nuevos platos al menú o eliminar aquellos que ya no estén disponibles.
 
 ## Estructura de la Base de Datos
 ![Esquema de la Base de Datos](bd.png)
