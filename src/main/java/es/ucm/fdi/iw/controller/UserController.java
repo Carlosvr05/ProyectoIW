@@ -46,9 +46,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * User management.
- *
- * Access to this end-point is authenticated.
+ * Controlador de Usuarios.
+ * Gestiona los perfiles, la seguridad (encriptación de contraseñas), fotos de
+ * avatar,
+ * historial de pedidos personales y la mensajería privada (chat individual).
+ * El acceso está restringido a usuarios autenticados.
  */
 @Controller()
 @RequestMapping("user")
@@ -68,31 +70,33 @@ public class UserController {
   @Autowired
   private PasswordEncoder passwordEncoder;
 
+  /**
+   * Pasa datos de la sesión HTTP al Modelo de Thymeleaf automáticamente.
+   * Evita repetir inyecciones de sesión en cada endpoint.
+   */
   @ModelAttribute
   public void populateModel(HttpSession session, Model model) {
-    for (String name : new String[] { "u", "url", "ws", "topics"}) {
+    for (String name : new String[] { "u", "url", "ws", "topics" }) {
       model.addAttribute(name, session.getAttribute(name));
     }
   }
 
   /**
-   * Exception to use when denying access to unauthorized users.
-   * 
-   * In general, admins are always authorized, but users cannot modify
-   * each other's profiles.
+   * Excepción personalizada lanzada cuando un usuario intenta acceder/modificar
+   * el perfil de otra persona sin tener permisos de Administrador.
+   * Devuelve un código HTTP 403 Forbidden.
    */
   @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "No eres administrador, y éste no es tu perfil") // 403
   public static class NoEsTuPerfilException extends RuntimeException {
   }
 
   /**
-   * Encodes a password, so that it can be saved for future checking. Notice
-   * that encoding the same password multiple times will yield different
-   * encodings, since encodings contain a randomly-generated salt.
+   * Codifica una contraseña en texto plano de forma segura usando BCrypt.
+   * La misma contraseña codificada varias veces generará diferentes hashes
+   * gracias al uso de 'salts' aleatorias.
    * 
-   * @param rawPassword to encode
-   * @return the encoded password (typically a 60-character string)
-   *         for example, a possible encoding of "test" is
+   * @param rawPassword Contraseña en texto plano a encriptar
+   * @return Hash seguro (string de 60 caracteres) possible encoding of "test" is
    *         {bcrypt}$2y$12$XCKz0zjXAP6hsFyVc8MucOzx6ER6IsC1qo5zQbclxhddR1t6SfrHm
    */
   public String encodePassword(String rawPassword) {
@@ -100,10 +104,11 @@ public class UserController {
   }
 
   /**
-   * Generates random tokens. From https://stackoverflow.com/a/44227131/15472
+   * Genera un token aleatorio seguro codificado en Base64.
+   * Útil para generar contraseñas temporales o identificadores de sesión.
    * 
-   * @param byteLength
-   * @return
+   * @param byteLength Longitud del token
+   * @return String en base64
    */
   public static String generateRandomBase64Token(int byteLength) {
     SecureRandom secureRandom = new SecureRandom();
@@ -113,24 +118,26 @@ public class UserController {
   }
 
   /**
-   * Landing page for a user profile
+   * Carga y muestra la página de perfil personal de un usuario concreto.
+   * Además de sus datos, consulta y pasa a la vista todos los pedidos
+   * (historial de compras) que ha realizado.
    */
   @GetMapping("{id}")
   public String index(@PathVariable long id, Model model, HttpSession session) {
     User target = entityManager.find(User.class, id);
     model.addAttribute("user", target);
-    
-    // Obtener los pedidos del usuario
+
+    // Obtener el historial completo de pedidos de este usuario
     List<?> pedidos = entityManager.createQuery("SELECT p FROM Pedido p WHERE p.cliente.id = :uid")
         .setParameter("uid", target.getId())
         .getResultList();
     model.addAttribute("pedidos", pedidos);
-    
-    return "user";
+
+    return "user"; // Renderiza user.html
   }
 
   /**
-   * Alter or create a user
+   * Modifica los datos de un usuario existente o crea uno nuevo (sólo admins).
    */
   @PostMapping("/{id}")
   @Transactional
@@ -143,41 +150,46 @@ public class UserController {
 
     User requester = (User) session.getAttribute("u");
     User target = null;
+
+    // Lógica para crear un nuevo usuario si se envía id=-1 (exclusivo para Admins)
     if (id == -1 && requester.hasRole(Role.ADMIN)) {
-      // create new user with random password
       target = new User();
-      target.setPassword(encodePassword(generateRandomBase64Token(12)));
+      target.setPassword(encodePassword(generateRandomBase64Token(12))); // Genera pass aleatoria
       target.setEnabled(true);
       entityManager.persist(target);
-      entityManager.flush(); // forces DB to add user & assign valid id
-      id = target.getId(); // retrieve assigned id from DB
+      entityManager.flush(); // Forzar para obtener el id
+      id = target.getId();
     }
 
-    // retrieve requested user
+    // Recupera al usuario que queremos modificar
     target = entityManager.find(User.class, id);
     model.addAttribute("user", target);
 
-    if (requester.getId() != target.getId() &&
-        !requester.hasRole(Role.ADMIN)) {
+    // Protección de seguridad: Nadie puede editar el perfil ajeno (salvo Admins)
+    if (requester.getId() != target.getId() && !requester.hasRole(Role.ADMIN)) {
       throw new NoEsTuPerfilException();
     }
 
+    // Lógica de cambio de contraseña
     if (edited.getPassword() != null) {
       if (!edited.getPassword().equals(pass2)) {
         log.warn("Passwords do not match - returning to user form");
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         model.addAttribute("user", target);
-        return "user";
+        return "user"; // Falla y recarga si las contraseñas no coinciden
       } else {
-        // save encoded version of password
+        // Encripta la nueva contraseña introducida
         target.setPassword(encodePassword(edited.getPassword()));
       }
     }
+
+    // Actualiza los demás campos
     target.setUsername(edited.getUsername());
     target.setFirstName(edited.getFirstName());
     target.setLastName(edited.getLastName());
 
-    // update user session so that changes are persisted in the session, too
+    // Si el usuario se está modificando a sí mismo, actualizar también su sesión en
+    // memoria
     if (requester.getId() == target.getId()) {
       session.setAttribute("u", target);
     }
@@ -186,9 +198,7 @@ public class UserController {
   }
 
   /**
-   * Returns the default profile pic
-   * 
-   * @return
+   * Devuelve la imagen de perfil por defecto si el usuario no tiene ninguna.
    */
   private static InputStream defaultPic() {
     return new BufferedInputStream(Objects.requireNonNull(
@@ -197,11 +207,8 @@ public class UserController {
   }
 
   /**
-   * Downloads a profile pic for a user id
-   * 
-   * @param id
-   * @return
-   * @throws IOException
+   * Sirve la foto de perfil particular de un usuario a través de un stream
+   * (directo al HTML).
    */
   @GetMapping("{id}/pic")
   public StreamingResponseBody getPic(@PathVariable long id) throws IOException {
@@ -211,11 +218,8 @@ public class UserController {
   }
 
   /**
-   * Uploads a profile pic for a user id
-   * 
-   * @param id
-   * @return
-   * @throws IOException
+   * Sube o cambia la fotografía de perfil de un usuario.
+   * Requiere pertenecer al usuario dueño de la foto, o tener rol ADMIN.
    */
   @PostMapping("{id}/pic")
   @ResponseBody
@@ -225,10 +229,9 @@ public class UserController {
     User target = entityManager.find(User.class, id);
     model.addAttribute("user", target);
 
-    // check permissions
+    // Validación estricta de permisos
     User requester = (User) session.getAttribute("u");
-    if (requester.getId() != target.getId() &&
-        !requester.hasRole(Role.ADMIN)) {
+    if (requester.getId() != target.getId() && !requester.hasRole(Role.ADMIN)) {
       throw new NoEsTuPerfilException();
     }
 
@@ -246,9 +249,12 @@ public class UserController {
         log.warn("Error uploading " + id + " ", e);
       }
     }
-    return "{\"status\":\"photo uploaded correctly\"}";
+    return "{\"status\":\"photo uploaded correctly\"}"; // Responder con JSON éxito
   }
 
+  /**
+   * Manejador genérico de errores bajo el endpoint "/user/error".
+   */
   @GetMapping("error")
   public String error(Model model, HttpSession session, HttpServletRequest request) {
     model.addAttribute("sess", session);
@@ -257,7 +263,8 @@ public class UserController {
   }
 
   /**
-   * Returns JSON with all received messages
+   * Recupera todos los mensajes directos (privados) RECIBIDOS por el usuario
+   * autenticado actualmente en la sesión, devolviéndolos en JSON.
    */
   @GetMapping(path = "received", produces = "application/json")
   @Transactional // para no recibir resultados inconsistentes
@@ -267,11 +274,14 @@ public class UserController {
     User u = entityManager.find(User.class, userId);
     log.info("Generating message list for user {} ({} messages)",
         u.getUsername(), u.getReceived().size());
+
+    // Convierte las Entidades Message a objetos DTO ligeros (Transfer)
     return u.getReceived().stream().map(Transferable::toTransfer).collect(Collectors.toList());
   }
 
   /**
-   * Returns JSON with count of unread messages
+   * Devuelve cuántos mensajes directos no han sido leídos por el usuario actual
+   * (JSON).
    */
   @GetMapping(path = "unread", produces = "application/json")
   @ResponseBody
@@ -280,16 +290,19 @@ public class UserController {
     long unread = entityManager.createNamedQuery("Message.countUnread", Long.class)
         .setParameter("userId", userId)
         .getSingleResult();
+
+    // Actualiza también la variable en la sesión global
     session.setAttribute("unread", unread);
     return "{\"unread\": " + unread + "}";
   }
 
   /**
-   * Posts a message to a user.
+   * Envía un mensaje directo (privado) a un usuario concreto, registrándolo en BD
+   * y empujándolo por WebSockets para que lo vea en tiempo real sin recargar
+   * página.
    * 
-   * @param id of target user (source user is from ID)
-   * @param o  JSON-ized message, similar to {"message": "text goes here"}
-   * @throws JsonProcessingException
+   * @param id ID del usuario destinatario
+   * @param o  Objeto JSON con el texto del mensaje
    */
   @PostMapping("/{id}/msg")
   @ResponseBody
@@ -300,18 +313,17 @@ public class UserController {
 
     String text = o.get("message").asText();
     User u = entityManager.find(User.class, id);
-    User sender = entityManager.find(
-        User.class, ((User) session.getAttribute("u")).getId());
+    User sender = entityManager.find(User.class, ((User) session.getAttribute("u")).getId());
     model.addAttribute("user", u);
 
-    // construye mensaje, lo guarda en BD
+    // 1. Construye el mensaje y lo asocia en la BD a destinatario y remitente
     Message m = new Message();
     m.setRecipient(u);
     m.setSender(sender);
     m.setDateSent(LocalDateTime.now());
     m.setText(text);
     entityManager.persist(m);
-    entityManager.flush(); // to get Id before commit
+    entityManager.flush(); // Fuerza guardar para obtener el ID real
 
     ObjectMapper mapper = new ObjectMapper();
     /*
@@ -328,6 +340,7 @@ public class UserController {
 
     log.info("Sending a message to {} with contents '{}'", id, json);
 
+    // 3. Empuja la notificación en tiempo real a la cola websocket de ese usuario
     messagingTemplate.convertAndSend("/user/" + u.getUsername() + "/queue/updates", json);
     return "{\"result\": \"message sent.\"}";
   }

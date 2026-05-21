@@ -27,9 +27,13 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 
 /**
- * Site administration.
- *
- * Access to this end-point is authenticated - see SecurityConfig
+ * Controlador de Administración del sitio.
+ * 
+ * Gestiona el panel de administrador, listado de usuarios, y estado del
+ * sistema.
+ * El acceso a todas las rutas bajo "/admin" está protegido y requiere
+ * autenticación
+ * (ver configuración en SecurityConfig).
  */
 @Controller
 @RequestMapping("admin")
@@ -41,86 +45,104 @@ public class AdminController {
   @Autowired
   private EntityManager entityManager;
 
+  private static final Logger log = LogManager.getLogger(AdminController.class);
+
+  /**
+   * Pasa datos de la sesión HTTP al Modelo de Thymeleaf automáticamente.
+   * Evita repetir inyecciones de sesión en cada endpoint.
+   */
   @ModelAttribute
   public void populateModel(HttpSession session, Model model) {
-    for (String name : new String[] { "u", "url", "ws", "topics"}) {
+    for (String name : new String[] { "u", "url", "ws", "topics" }) {
       model.addAttribute(name, session.getAttribute(name));
     }
   }
 
-  private static final Logger log = LogManager.getLogger(AdminController.class);
-
+  /**
+   * Muestra el panel principal de administración.
+   * Carga todos los usuarios de la base de datos para mostrarlos en la tabla.
+   */
   @GetMapping("/")
   public String index(Model model) {
     log.info("Admin acaba de entrar");
     model.addAttribute("users",
         entityManager.createQuery("select u from User u").getResultList());
-    return "admin";
+    return "admin"; // Renderiza admin.html
   }
 
+  /**
+   * Cambia asíncronamente el estado de habilitado/deshabilitado de un usuario.
+   * Usado por los botones de Banear/Habilitar del panel de admin sin recargar la
+   * página.
+   */
   @PostMapping("/toggle/{id}")
-  @Transactional
-  @ResponseBody
+  @Transactional // Necesario porque modifica un estado en la BD
+  @ResponseBody // Devuelve datos JSON, no una vista HTML
   public String toggleUser(@PathVariable long id, Model model) {
     log.info("Admin cambia estado de " + id);
     User target = entityManager.find(User.class, id);
-    target.setEnabled(!target.isEnabled());
+    target.setEnabled(!target.isEnabled()); // Invierte su estado (Activo/Inactivo)
     return "{\"enabled\":" + target.isEnabled() + "}";
   }
 
   /**
-   * Returns JSON with all received messages
+   * Devuelve los últimos mensajes enviados por el sistema en formato JSON.
+   * Usado por DataTable en admin.html para poblar el log.
    */
   @GetMapping(path = "all-messages", produces = "application/json")
-  @Transactional // para no recibir resultados inconsistentes
-  @ResponseBody // para indicar que no devuelve vista, sino un objeto (jsonizado)
+  @Transactional // Para no recibir resultados inconsistentes a medio escribir
+  @ResponseBody // Indica que devuelve un objeto (JSON), no una vista
   public List<Message.Transfer> retrieveMessages(HttpSession session) {
     TypedQuery<Message> query = entityManager.createQuery("select m from Message m", Message.class);
-    query.setMaxResults(5);
-    query.setFirstResult(0); // para paginar: cambias el 1er resultado
-    // devuelve resultado
-    return query.getResultList().stream().map(Transferable::toTransfer)
+    query.setMaxResults(5); // Limita los resultados a los últimos 5 mensajes
+    query.setFirstResult(0); // Útil para paginar (indica a partir de qué fila extraer)
+
+    // Devuelve los mensajes transformados en objetos ligeros de transferencia (DTO)
+    return query.getResultList().stream()
+        .map(Transferable::toTransfer)
         .collect(Collectors.toList());
   }
 
+  /**
+   * Endpoint de desarrollo para rellenar la base de datos con datos de prueba
+   * (usuarios aleatorios y grupos).
+   */
   @RequestMapping("/populate")
   @ResponseBody
-  @Transactional
+  @Transactional // Todas las inserciones se harán bajo una misma transacción
   public String populate(Model model) {
 
-    // create some groups
+    // Crear un par de grupos de mensajería
     Topic g1 = new Topic();
     g1.setName("g1");
     g1.setKey(UserController.generateRandomBase64Token(6));
     entityManager.persist(g1);
+
     Topic g2 = new Topic();
     g2.setName("g2");
     g2.setKey(UserController.generateRandomBase64Token(6));
     entityManager.persist(g2);
 
-    // create some users & assign to groups
+    // Crear 15 usuarios con datos aleatorios y asignarlos a los grupos
     for (int i = 0; i < 15; i++) {
       User u = new User();
       u.setUsername("user" + i);
-      u.setPassword(passwordEncoder
-          .encode("aa"));
-            //UserController.generateRandomBase64Token(9)));
+      u.setPassword(passwordEncoder.encode("aa")); // Contraseña genérica 'aa'
       u.setEnabled(true);
       u.setRoles(User.Role.USER.toString());
       u.setFirstName(Lorem.nombreAlAzar());
       u.setLastName(Lorem.apellidoAlAzar());
       entityManager.persist(u);
-      if (i%2 == 0) {
+
+      // Asignar a grupos alternamente para dar variedad
+      if (i % 2 == 0) {
         g1.getMembers().add(u);
-        // u.getTopics().add(g1); NO FUNCIONA: propietario es g, no u
       }
-      if (i%3 == 0) {
+      if (i % 3 == 0) {
         g2.getMembers().add(u);
       }
     }
-    return "{\"admin\": \"populated\"}";
+    return "{\"admin\": \"populated\"}"; // Responde éxito en formato JSON
   }
-
-  
 
 }

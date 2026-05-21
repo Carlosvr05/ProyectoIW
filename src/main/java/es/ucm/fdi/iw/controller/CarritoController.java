@@ -22,6 +22,11 @@ import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Controlador que gestiona la lógica del Carrito de la Compra virtual.
+ * Permite añadir platos, eliminarlos, ver el estado actual de la cesta,
+ * y confirmar pedidos dividiéndolos por facultad.
+ */
 @Controller
 @RequestMapping("/carrito")
 public class CarritoController {
@@ -31,6 +36,9 @@ public class CarritoController {
 
     private static final Logger log = LogManager.getLogger(CarritoController.class);
 
+    /**
+     * Inyecta variables comunes de sesión en el modelo de todas las peticiones a '/carrito/*'.
+     */
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
         for (String name : new String[] { "u", "url", "ws", "topics" }) {
@@ -38,50 +46,56 @@ public class CarritoController {
         }
     }
 
-    // --- CONFIRMAR LA COMPRA (CARRITO -> PEDIDO) ---
+    /**
+     * CONFIRMAR COMPRA: Transforma el carrito virtual en pedidos reales.
+     * Cobra al usuario y genera pedidos diferentes por cada Facultad de recogida involucrada.
+     */
     @PostMapping("/comprar")
     @Transactional
     public String confirmarCompra(HttpSession session) {
 
         User sessionUser = (User) session.getAttribute("u");
+        // Prevención de acceso sin autenticar
         if (sessionUser == null) {
             return "redirect:/login";
         }
 
-        // 1. Recuperar el usuario real y el carrito
+        // 1. Recuperar datos frescos de la BD para el usuario y su carrito asociado
         User dbUser = entityManager.find(User.class, sessionUser.getId());
         Carrito carrito = entityManager.createQuery("SELECT c FROM Carrito c WHERE c.cliente.id = :uid", Carrito.class)
                 .setParameter("uid", dbUser.getId())
                 .getSingleResult();
 
         Double totalcarro = carrito.getTotal();
-        Double dinero = dbUser.getMoney();
+        Double dinero = dbUser.getMoney(); // Saldo actual de la cartera del usuario
 
-        // 2. Comprobar si tiene dinero suficiente
+        // 2. Validación de saldo suficiente
         if (totalcarro <= dinero) {
 
-            // 3. Cobrar al usuario y actualizar la sesión
+            // 3. Efectuar el cobro (BD) y sincronizar la copia de sesión
             dbUser.setMoney(dinero - totalcarro);
             session.setAttribute("u", dbUser);
 
-            // 4. Agrupar las líneas de pedido por facultad
+            // 4. Lógica de separación de pedidos:
+            // Agrupar las líneas del carrito según a qué Facultad pertenezcan
             java.util.Map<Facultad, java.util.List<LineaPedido>> porFacultad = new java.util.HashMap<>();
             for (LineaPedido itemCarrito : carrito.getItems()) {
                 porFacultad.computeIfAbsent(itemCarrito.getFacultad(), k -> new java.util.ArrayList<>()).add(itemCarrito);
             }
 
-            // Crear un Pedido distinto por cada facultad
+            // Crear un objeto Pedido distinto en la BD por cada facultad encontrada
             for (java.util.Map.Entry<Facultad, java.util.List<LineaPedido>> entry : porFacultad.entrySet()) {
                 Pedido pedido = new Pedido();
                 pedido.setCliente(dbUser);
                 pedido.setEstado(Pedido.Estado.SOLICITADO);
-                entityManager.persist(pedido); // Guardamos para ID
+                entityManager.persist(pedido); // Persistir primero para generar un ID válido
 
+                // Transferir las líneas (platos + cantidad) del carrito al pedido real
                 for (LineaPedido itemCarrito : entry.getValue()) {
                     LineaPedido nuevaLinea = new LineaPedido();
                     nuevaLinea.setPlato(itemCarrito.getPlato());
                     nuevaLinea.setCantidad(itemCarrito.getCantidad());
-                    nuevaLinea.setPrecioUnitario(itemCarrito.getPlato().getPrecio());
+                    nuevaLinea.setPrecioUnitario(itemCarrito.getPlato().getPrecio()); // Foto del precio actual
                     nuevaLinea.setFacultad(itemCarrito.getFacultad());
 
                     entityManager.persist(nuevaLinea);
@@ -89,19 +103,21 @@ public class CarritoController {
                 }
             }
 
-            // 5. Vaciar el carrito
+            // 5. El carrito se vacía tras finalizar los pedidos
             carrito.getItems().clear();
 
-            // Redirigimos con éxito
+            // Redirigir a la vista de carrito mostrando el mensaje de éxito
             return "redirect:/carrito?comprahecha=true";
 
         } else {
-            // Si no tiene dinero, redirigimos con el aviso
+            // El usuario no tiene dinero suficiente, redirigimos mostrando advertencia
             return "redirect:/carrito?comprahecha=false";
         }
     }
 
-    // --- BORRAR UN PLATO DEL CARRITO ---
+    /**
+     * BORRAR PLATO: Elimina una línea concreta del carrito activo del usuario.
+     */
     @PostMapping("/quitar/{idLinea}")
     @Transactional
     public String quitarDelCarrito(@PathVariable long idLinea, HttpSession session) {
@@ -109,22 +125,26 @@ public class CarritoController {
         if (u == null)
             return "redirect:/login";
 
+        // Obtener el carrito actual
         Carrito carrito = entityManager.createQuery("SELECT c FROM Carrito c WHERE c.cliente.id = :uid", Carrito.class)
                 .setParameter("uid", u.getId())
                 .getSingleResult();
 
-        // Buscamos la línea dentro del carrito y la eliminamos
+        // Localizar la línea por su ID y removerla del carrito
         carrito.getItems().removeIf(linea -> linea.getId() == idLinea);
 
-        // Al estar en @Transactional, Hibernate actualiza la BD automáticamente
+        // Al ejecutarse en un entorno @Transactional, Hibernate elimina la línea huérfana
         return "redirect:/carrito";
     }
 
+    /**
+     * AÑADIR PLATO: Agrega un plato y cantidad de una facultad específica al carrito virtual.
+     */
     @PostMapping("/add/{idPlato}")
     @Transactional
     public String addAlCarrito(
             @PathVariable long idPlato,
-            @RequestParam long facultadId, // Recibimos la facultad
+            @RequestParam long facultadId, // Es vital saber de dónde se va a recoger
             @RequestParam(defaultValue = "1") int cantidad,
             HttpSession session,
             jakarta.servlet.http.HttpServletRequest request) {
@@ -134,21 +154,25 @@ public class CarritoController {
             return "redirect:/login";
         }
 
+        // Cargar las entidades persistentes
         User user = entityManager.find(User.class, u.getId());
         Plato plato = entityManager.find(Plato.class, idPlato);
         Facultad facultad = entityManager.find(Facultad.class, facultadId);
 
+        // Validar que el plato y la facultad existen
         if (plato == null || facultad == null) {
             log.warn("Intento de añadir plato o facultad inexistente: plato={}, facultad={}", idPlato, facultadId);
-            return "redirect:/plato";
+            return "redirect:/plato"; // Abortamos
         }
 
         Carrito carrito;
         try {
+            // Buscamos si el usuario ya tiene un carrito guardado
             carrito = entityManager.createQuery("SELECT c FROM Carrito c WHERE c.cliente.id = :uid", Carrito.class)
                     .setParameter("uid", user.getId())
                     .getSingleResult();
         } catch (jakarta.persistence.NoResultException e) {
+            // Si es su primera vez comprando, se le asigna un carrito vacío y se persiste
             carrito = new Carrito();
             carrito.setCliente(user);
             entityManager.persist(carrito);
@@ -159,7 +183,7 @@ public class CarritoController {
 
         log.info("Añadiendo al carrito: Plato {} de Facultad {}", targetPlatoId, targetFacultadId);
 
-        // Buscamos si ya existe una línea con MISMO plato y MISMA facultad
+        // Buscar si en el carrito YA hay una línea con EXACTAMENTE el mismo plato y la misma facultad
         LineaPedido existente = carrito.getItems().stream()
                 .filter(lp -> lp.getPlato() != null && lp.getPlato().getId() == targetPlatoId)
                 .filter(lp -> lp.getFacultad() != null && lp.getFacultad().getId() == targetFacultadId)
@@ -167,9 +191,11 @@ public class CarritoController {
                 .orElse(null);
 
         if (existente != null) {
+            // Si existe, simplemente incrementamos la cantidad deseada
             log.info("Se ha encontrado una línea existente (ID {}). Incrementando cantidad en {}", existente.getId(), cantidad);
             existente.setCantidad(existente.getCantidad() + cantidad);
         } else {
+            // Si no existe esa combinación, creamos una nueva línea en la lista
             log.info("No existe una línea para esta combinación plato-facultad. Creando nueva LineaPedido.");
             LineaPedido nuevaLinea = new LineaPedido();
             nuevaLinea.setPlato(plato);
@@ -180,12 +206,16 @@ public class CarritoController {
             carrito.getItems().add(nuevaLinea);
         }
 
+        // Devolver al usuario a la página desde donde clicó en "Añadir"
         String referer = request.getHeader("Referer");
         return "redirect:" + (referer != null ? referer : "/plato");
     }
 
+    /**
+     * VISTA DEL CARRITO: Renderiza la página web 'carrito.html' pasando el objeto carrito actual.
+     */
     @GetMapping
-    @Transactional
+    @Transactional // A veces es necesario para inicializar colecciones lazy vinculadas a carrito
     public String carrito(Model model, HttpSession session) {
         User u = (User) session.getAttribute("u");
         if (u == null) {
@@ -198,9 +228,11 @@ public class CarritoController {
                     .setParameter("uid", u.getId())
                     .getSingleResult();
         } catch (jakarta.persistence.NoResultException e) {
-            // Si no hay carrito, pasamos null o no pasamos nada y lo controlamos en el HTML
+            // Si el carrito no existe en la BD, la variable 'carrito' queda a nulo.
+            // Thymeleaf (html) ya está preparado para mostrar el mensaje de "Tu carrito está vacío"
         }
 
+        // Inyectamos el carrito en el modelo
         model.addAttribute("carrito", carrito);
         return "carrito";
     }

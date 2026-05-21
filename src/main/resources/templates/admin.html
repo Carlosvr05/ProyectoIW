@@ -3,118 +3,169 @@
 
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
-    <title>IW: Admin</title>
+    <title>MenUni: Panel Admin</title>
+    <!-- CSS para la tabla de datos simple de la sección de mensajes -->
     <link rel="stylesheet" th:href="@{/css/simple-datatables-10.css}" href="/css/simple-datatables-10.css"
         type="text/css" />
 </head>
 
 <body class="d-flex flex-column h-100">
+    <!-- Navegación principal -->
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
     <main class="flex-shrink-0">
+
+        <!-- Título principal -->
         <div class="container">
-            <h1 class="mt-5">Administración</h1>
-        </div>
-        <div class="container">
-            <h1 class="mt-5">Usuarios</h1>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Nombre & Apellidos</th>
-                        <th>Roles</th>
-                        <th>Grupos</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="user : ${users}">
-                        <td th:text="${user.id}">1</td>
-                        <td th:text="${user.username}">paco</td>
-                        <td th:text="${user.firstName + ' ' + user.lastName}">Nombre</td>
-                        <td>
-                            <ul>
-                                <li th:text="${user.roles}">Role</li>
-                            </ul>
-                        </td>
-                        <td>
-                          <ul>
-                              <li th:text="${user.groups}">Role</li>
-                          </ul>
-                      </td>
-                      <td>
-                            <form th:action="@{'/admin/toggle/' + ${user.id}}" th:method="post">
-                                <button th:if="${user.enabled}" type="submit"
-                                    class="toggle btn btn-danger">Deshabilitar</button>
-                                <button th:unless="${user.enabled}" type="submit"
-                                    class="toggle btn btn-primary">Habilitar</button>
-                            </form>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <h1 class="mt-5 text-center">Panel de Administración</h1>
         </div>
 
+        <!-- SECCIÓN 1: Gestión de Usuarios -->
         <div class="container">
+            <h2 class="mt-4">Usuarios</h2>
+            <div class="table-responsive shadow-sm bg-white p-3 rounded border">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Id</th>
+                            <th>Nombre de Usuario</th>
+                            <th>Nombre & Apellidos</th>
+                            <th>Roles</th>
+                            <th>Grupos</th>
+                            <th>Acciones (Ban/Desban)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Iteramos sobre la lista de usuarios del sistema -->
+                        <tr th:each="user : ${users}">
+                            <td class="fw-bold" th:text="${user.id}">1</td>
+                            <td th:text="${user.username}">paco</td>
+                            <td th:text="${user.firstName + ' ' + user.lastName}">Nombre</td>
 
-            <h2>Últimos 5 mensajes del sistema</h2>
-            <table id="messages"></table> <!-- will be filled with JSON data-->
-            <button id="refresh" class="btn btn-primary">Actualizar vía AJAX</button>
+                            <!-- Lista de roles del usuario (ej: ADMIN, USER) -->
+                            <td>
+                                <ul class="list-unstyled mb-0">
+                                    <li th:text="${user.roles}">Role</li>
+                                </ul>
+                            </td>
 
+                            <!-- Lista de grupos a los que pertenece -->
+                            <td>
+                                <ul class="list-unstyled mb-0">
+                                    <li th:text="${user.groups}">Grupo</li>
+                                </ul>
+                            </td>
+
+                            <!-- Botón para habilitar/deshabilitar la cuenta del usuario mediante AJAX -->
+                            <td>
+                                <form th:action="@{'/admin/toggle/' + ${user.id}}" th:method="post" class="m-0">
+                                    <button th:if="${user.enabled}" type="submit"
+                                        class="toggle btn btn-danger btn-sm w-100">Deshabilitar</button>
+                                    <button th:unless="${user.enabled}" type="submit"
+                                        class="toggle btn btn-primary btn-sm w-100">Habilitar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: Registro de Mensajes del Sistema (Logs) -->
+        <div class="container mt-5 mb-5">
+            <h2 class="mb-3">Últimos mensajes del sistema</h2>
+            <div class="shadow-sm bg-white p-3 rounded border">
+                <!-- Contenedor de la tabla que rellenará la librería simple-datatables -->
+                <table id="messages" class="table"></table>
+
+                <!-- Botón de actualización asíncrona -->
+                <button id="refresh" class="btn btn-primary mt-3">
+                    <i class="bi bi-arrow-clockwise"></i> Actualizar vía AJAX
+                </button>
+            </div>
         </div>
 
     </main>
 
+    <!-- Pie de página -->
     <th:block th:replace="~{fragments/footer.html :: footer}" />
+
+    <!-- Lógica AJAX para Habilitar/Deshabilitar Usuarios sin recargar la página -->
     <script>
-        const toggles = document.querySelectorAll('.toggle');
-        toggles.forEach(toggle => {
-            toggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                const form = e.target.parentElement;
-                go(form.action, 'POST').then((d) => {
-                    if (d.enabled) {
-                        e.target.classList.remove('btn-primary');
-                        e.target.classList.add('btn-danger');
-                        e.target.textContent = 'Deshabilitar';
-                    } else {
-                        e.target.classList.remove('btn-danger');
-                        e.target.classList.add('btn-primary');
-                        e.target.textContent = 'Habilitar';
-                    }
-                    console.log(d);
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggles = document.querySelectorAll('.toggle');
+
+            toggles.forEach(toggle => {
+                toggle.addEventListener('click', (e) => {
+                    e.preventDefault(); // Evitamos que el formulario envíe por POST tradicional
+                    const form = e.target.parentElement;
+
+                    // Llama a la función 'go' de ajax-demo.js para hacer la petición en background
+                    go(form.action, 'POST').then((d) => {
+                        // Cambiamos el aspecto visual del botón en función de si la cuenta quedó activada (enabled) o no
+                        if (d.enabled) {
+                            e.target.classList.remove('btn-primary');
+                            e.target.classList.add('btn-danger');
+                            e.target.textContent = 'Deshabilitar';
+                        } else {
+                            e.target.classList.remove('btn-danger');
+                            e.target.classList.add('btn-primary');
+                            e.target.textContent = 'Habilitar';
+                        }
+                        console.log("Usuario modificado:", d);
+                    }).catch(err => {
+                        console.error("Error cambiando estado del usuario:", err);
+                        alert("Hubo un error de comunicación con el servidor.");
+                    });
                 });
             });
         });
-
-
     </script>
 
+    <!-- Lógica de DataTable para rellenar la tabla de Mensajes -->
     <script type="module">
-        import { DataTable } from "../js/simple-datatables-10.js"
+        import { DataTable } from "../js/simple-datatables-10.js";
+
         let dt = null;
+
+        /**
+         * Llama a la API del admin para recuperar mensajes en JSON 
+         * y repuebla la tabla interactiva (DataTables) dinámicamente.
+         */
         function refreshMessages() {
             go('/admin/all-messages', 'GET').then((d) => {
+                // Si la tabla ya existía, hay que destruirla antes de rellenarla con los datos nuevos
                 if (dt) {
                     dt.destroy();
                     document.querySelector("#messages").innerHTML = '';
                 }
+
+                // Inicializamos la tabla
                 dt = new DataTable('#messages', {
                     data: {
-                        headings: ['from', 'to', 'text'],
-                        data: d
+                        headings: ['De (Origen)', 'Para (Destino)', 'Texto del mensaje'], // Títulos de columnas
+                        data: d // Datos JSON provistos desde el backend
                     },
                     searchable: true,
                     paging: false
                 });
+
+                // Evento al seleccionar una fila de la tabla
                 dt.on("datatable.selectrow", (rowIndex, event, focused) => {
                     event.preventDefault();
-                    console.log("click en fila: ", dataTable.data[rowIndex]);
+                    console.log("Click en fila: ", dt.data[rowIndex]);
                 });
-            });
+            }).catch(err => console.error("Error al refrescar mensajes:", err));
         }
-        document.getElementById('refresh').addEventListener('click', refreshMessages);
-        refreshMessages();
+
+        // Ejecutamos la función cuando el DOM termine de cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            // Conectar el botón de refresco
+            document.getElementById('refresh').addEventListener('click', refreshMessages);
+
+            // Ejecutar la primera carga de la tabla
+            refreshMessages();
+        });
     </script>
 </body>
 

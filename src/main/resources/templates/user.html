@@ -3,138 +3,220 @@
 
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
-    <title>IW: Perfil</title>
+    <title>MenUni: Perfil de Usuario</title>
 </head>
 
 <body class="d-flex flex-column h-100">
+    <!-- Navegación principal -->
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
     <main class="flex-shrink-0 container mt-4">
+
+        <!-- Pestañas de navegación interna (Tabs de Bootstrap) -->
         <ul class="nav nav-tabs" id="perfilTabs" role="tablist">
+            <!-- Pestaña 1: Información General -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">General</button>
+                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general"
+                    type="button" role="tab" aria-controls="general" aria-selected="true">
+                    General
+                </button>
             </li>
+            <!-- Pestaña 2: Pedidos y Códigos QR -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="pedidos-tab" data-bs-toggle="tab" data-bs-target="#pedidos" type="button" role="tab" aria-controls="pedidos" aria-selected="false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-qr-code-scan me-2" viewBox="0 0 16 16">
-                        <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM7 7h2v2H7V7z"/>
-                        <path d="M3 4.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zm1 2h1v-1H4v1zm6-2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zm1 2h1v-1h-1v1zm-7 6a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zm1 2h1v-1H4v1zm6-2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zm1 2h1v-1h-1v1z"/>
+                <button class="nav-link" id="pedidos-tab" data-bs-toggle="tab" data-bs-target="#pedidos" type="button"
+                    role="tab" aria-controls="pedidos" aria-selected="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        class="bi bi-qr-code-scan me-2" viewBox="0 0 16 16">
+                        <path
+                            d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM7 7h2v2H7V7z" />
+                        <path
+                            d="M3 4.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zm1 2h1v-1H4v1zm6-2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zm1 2h1v-1h-1v1zm-7 6a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zm1 2h1v-1H4v1zm6-2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zm1 2h1v-1h-1v1z" />
                     </svg>
                     Mis Pedidos (QRs)
                 </button>
             </li>
         </ul>
+
+        <!-- Contenido contenedor de las pestañas -->
         <div class="tab-content border border-top-0 p-4 rounded-bottom" id="perfilTabsContent">
-            
-            <!-- PESTAÑA GENERAL -->
+
+            <!-- ===================== PESTAÑA 1: GENERAL ===================== -->
             <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
-                <div id="books" class="border border-2 border-primary rounded p-2 mb-3">
-                    <label for="isbn">ISBN</label><input id="isbn" value="9780140328721" />
-                    <button id="fetchBook">Buscar datos online</button>
-                    <img class="preview" id="portada" alt="portada del libro" />
-                    <form th:action="@{/user/__${user.id}__/pic}">
-                        <button id="postPortada" class="perfilable">Usar como foto de perfil</button>
-                    </form>
-                </div>
-                <div id="movies" class="border border-2 border-secondary rounded p-2 mb-3">
-                    <label for="imdb">IMDB</label><input id="imdb" value="tt11286314" />
-                    <button id="fetchMovie">Buscar datos online</button>
-                    <img class="preview" id="poster" alt="poster de la pelicula" />
-                    <form th:action="@{/user/__${user.id}__/pic}">
-                        <button id="postPoster" class="perfilable">Usar como foto de perfil</button>
-                    </form>
-                </div>
-                <div id="profile" class="border border-2 border-tertiary rounded p-2 mb-3">
-                    <input type="file" id="f_avatar" accept="image/jpeg,image/png">
-                    <img class="preview" id="avatar" alt="careto a subir" />
-                    <form th:action="@{/user/__${user.id}__/pic}">
-                        <button id="postAvatar">Usar como foto de perfil</button>
-                    </form>
+
+                <!-- Sección para probar peticiones AJAX (Demo de clase) 
+                     Están ocultas con 'd-none' para no manchar visualmente el proyecto final 
+                     pero se mantienen por si se necesitan para demostración técnica -->
+                <div class="d-none">
+                    <div id="books" class="border border-2 border-primary rounded p-2 mb-3">
+                        <label for="isbn">ISBN</label><input id="isbn" value="9780140328721" />
+                        <button id="fetchBook">Buscar datos online</button>
+                        <img class="preview" id="portada" alt="portada del libro" />
+                        <form th:action="@{/user/__${user.id}__/pic}">
+                            <button id="postPortada" class="perfilable">Usar como foto de perfil</button>
+                        </form>
+                    </div>
+                    <div id="movies" class="border border-2 border-secondary rounded p-2 mb-3">
+                        <label for="imdb">IMDB</label><input id="imdb" value="tt11286314" />
+                        <button id="fetchMovie">Buscar datos online</button>
+                        <img class="preview" id="poster" alt="poster de la pelicula" />
+                        <form th:action="@{/user/__${user.id}__/pic}">
+                            <button id="postPoster" class="perfilable">Usar como foto de perfil</button>
+                        </form>
+                    </div>
                 </div>
 
-                <div class="container mt-4">
-                    <h1 class="mt-5">Perfil de <span th:text="${user.username}">Paco</span></h1>
-                    <!-- recepción de mensajes -->
-                    <div class="py-5 row" id="mensajes">
-                    </div>
-                    <!-- envío de mensajes -->
-                    <div class="py-5 row ">
-                        <form th:action="@{/user/__${user.id}__/msg}" method="POST">
-                            <input type="text" id="message" placeholder="escribe a este usuario" />
-                            <button id="sendmsg" class="btn btn-secondary" type="submit">Enviar</button>
+                <!-- Subida de Avatar -->
+                <div id="profile" class="border border-2 border-primary rounded p-3 mb-4 bg-light shadow-sm">
+                    <h5 class="mb-3"><i class="bi bi-person-bounding-box"></i> Foto de Perfil</h5>
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- El input para seleccionar la imagen local -->
+                        <input type="file" class="form-control w-50" id="f_avatar" accept="image/jpeg,image/png">
+                        <!-- Imagen de previsualización que se rellena con JS -->
+                        <img class="preview rounded-circle border" id="avatar" alt="Previsualización"
+                            style="width: 64px; height: 64px; object-fit: cover;" />
+                        <!-- Formulario para mandar la imagen al controlador Spring -->
+                        <form th:action="@{/user/__${user.id}__/pic}">
+                            <button id="postAvatar" class="btn btn-primary">Subir foto de perfil</button>
                         </form>
+                    </div>
+                </div>
+
+                <!-- Zona principal del Perfil: Mensajería -->
+                <div class="container mt-4 p-0">
+                    <h2 class="mb-4 text-primary">Perfil de <span th:text="${user.username}"
+                            class="fw-bold">Usuario</span></h2>
+
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                            <h5><i class="bi bi-chat-dots text-primary"></i> Mensajes</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Recepción de mensajes (Se llena vía JS en ajax-demo.js) -->
+                            <div id="mensajes" class="border rounded p-3 mb-3 bg-light"
+                                style="min-height: 100px; max-height: 300px; overflow-y: auto;">
+                                <p class="text-muted small mb-0">Cargando mensajes...</p>
+                            </div>
+
+                            <!-- Envío de mensajes -->
+                            <form th:action="@{/user/__${user.id}__/msg}" method="POST">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="message"
+                                        placeholder="Escribe un mensaje..." required />
+                                    <button id="sendmsg" class="btn btn-primary" type="submit">
+                                        <i class="bi bi-send"></i> Enviar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <!-- ===================== PESTAÑA 2: MIS PEDIDOS ===================== -->
             <div class="tab-pane fade" id="pedidos" role="tabpanel" aria-labelledby="pedidos-tab">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3>Mis Pedidos y Códigos QR</h3>
-                    <span class="badge bg-info text-dark">Escanea para verificar</span>
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <h3 class="mb-0 text-primary"><i class="bi bi-bag-check"></i> Mis Pedidos y Códigos QR</h3>
+                    <span class="badge bg-primary fs-6 shadow-sm"><i class="bi bi-upc-scan"></i> Escanea para
+                        verificar</span>
                 </div>
-                
-                <p th:if="${pedidos == null or pedidos.isEmpty()}" class="alert alert-light border">No tienes pedidos actualmente. Cuando realices un pedido, aparecerá aquí con su código QR.</p>
-                
+
+                <!-- Mensaje cuando no hay pedidos en el historial del usuario -->
+                <div th:if="${pedidos == null or pedidos.isEmpty()}"
+                    class="alert alert-info border shadow-sm p-4 text-center">
+                    <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
+                    No tienes pedidos actualmente. Cuando realices un pedido, aparecerá aquí junto con su código QR
+                    identificativo.
+                </div>
+
+                <!-- Listado de Pedidos generados (como tarjetas individuales) -->
                 <div class="row" th:if="${pedidos != null and !pedidos.isEmpty()}">
                     <div class="col-md-6 col-lg-4 mb-4" th:each="pedido : ${pedidos}">
-                        <div class="card h-100 shadow-sm border-0 bg-light">
+                        <div class="card h-100 shadow-sm border border-secondary border-opacity-25 bg-white">
                             <div class="card-body text-center p-4">
                                 <div class="mb-3">
-                                    <h5 class="card-title text-primary mb-1">Pedido #<span th:text="${pedido.id}"></span></h5>
-                                    <span class="badge rounded-pill bg-white text-primary border border-primary px-3" th:text="${pedido.estado}"></span>
+                                    <h5 class="card-title text-primary mb-1 fw-bold">Pedido #<span
+                                            th:text="${pedido.id}"></span></h5>
+                                    <!-- Estado del pedido (Ej. PENDIENTE, COMPLETADO) -->
+                                    <span
+                                        class="badge rounded-pill bg-light text-primary border border-primary px-3 py-2"
+                                        th:text="${pedido.estado}"></span>
                                 </div>
-                                
-                                <!-- Contenedor del QR con estilo de ticket -->
-                                <div class="bg-white p-3 rounded shadow-sm d-inline-block mb-3 border border-dashed">
-                                    <div class="qrcode-container" th:attr="data-qr-text='Pedido ID: ' + ${pedido.id} + ' | Cliente: ' + ${user.username} + ' | Estado: ' + ${pedido.estado}"></div>
+
+                                <!-- Contenedor del código QR (Se inyecta la librería qrcode.js aquí) -->
+                                <div class="bg-white p-3 rounded shadow-sm d-inline-block mb-3 border">
+                                    <!-- Guardamos los datos que va a contener el QR en data-qr-text -->
+                                    <div class="qrcode-container"
+                                        th:attr="data-qr-text='Pedido ID: ' + ${pedido.id} + ' | Cliente: ' + ${user.username} + ' | Estado: ' + ${pedido.estado}">
+                                    </div>
                                 </div>
-                                
-                                <p class="small text-muted mt-2">Muestra este código en la cafetería para recoger tu pedido.</p>
-                                
-                                <!-- Botón para ver detalles -->
-                                <button type="button" class="btn btn-outline-primary btn-sm mt-2 w-100 fw-bold" data-bs-toggle="modal" th:attr="data-bs-target='#pedidoModal' + ${pedido.id}">
-                                    <i class="bi bi-list-ul"></i> Ver detalles del pedido
+
+                                <p class="small text-muted mt-2 px-2">Muestra este código en la cafetería para recoger
+                                    tu pedido.</p>
+
+                                <!-- Botón que despliega el modal con la lista de platos (factura) -->
+                                <button type="button" class="btn btn-outline-primary w-100 fw-bold mt-2"
+                                    data-bs-toggle="modal" th:attr="data-bs-target='#pedidoModal' + ${pedido.id}">
+                                    <i class="bi bi-list-ul"></i> Ver factura
                                 </button>
-                                
-                                <!-- Modal de Detalles del Pedido -->
-                                <div class="modal fade" th:id="'pedidoModal' + ${pedido.id}" tabindex="-1" aria-labelledby="pedidoModalLabel" aria-hidden="true">
+
+                                <!-- Modal con la "factura" y detalles del pedido -->
+                                <div class="modal fade" th:id="'pedidoModal' + ${pedido.id}" tabindex="-1"
+                                    aria-labelledby="pedidoModalLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content text-start">
+                                        <div class="modal-content text-start border-0 shadow-lg">
+
+                                            <!-- Cabecera del modal -->
                                             <div class="modal-header bg-primary text-white">
                                                 <h5 class="modal-title" th:id="'pedidoModalLabel' + ${pedido.id}">
-                                                    <i class="bi bi-receipt"></i> Detalles del Pedido #<span th:text="${pedido.id}"></span>
+                                                    <i class="bi bi-receipt"></i> Factura Pedido #<span
+                                                        th:text="${pedido.id}"></span>
                                                 </h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
+
+                                            <!-- Cuerpo del modal: Listado de líneas de pedido (platos comprados) -->
                                             <div class="modal-body p-0">
                                                 <div class="list-group list-group-flush">
-                                                    <div class="list-group-item d-flex justify-content-between align-items-center p-3" th:each="linea : ${pedido.lineas}">
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center p-3"
+                                                        th:each="linea : ${pedido.lineas}">
                                                         <div>
-                                                            <h6 class="mb-1 fw-bold text-dark" th:text="${linea.plato.nombre}">Nombre Plato</h6>
-                                                            <small class="text-muted d-block" th:if="${linea.facultad != null}">
-                                                                <i class="bi bi-shop"></i> <span th:text="${linea.facultad.nombre}">Cafetería</span>
+                                                            <h6 class="mb-1 fw-bold text-dark"
+                                                                th:text="${linea.plato.nombre}">Nombre Plato</h6>
+                                                            <small class="text-muted d-block"
+                                                                th:if="${linea.facultad != null}">
+                                                                <i class="bi bi-shop"></i> <span
+                                                                    th:text="${linea.facultad.nombre}">Cafetería</span>
                                                             </small>
                                                         </div>
                                                         <div class="text-end">
-                                                            <span class="badge bg-secondary rounded-pill fs-6">
-                                                                <span th:text="${linea.cantidad}"></span> x <span th:text="${#numbers.formatDecimal(linea.precioUnitario, 1, 2)}"></span>€
+                                                            <span
+                                                                class="badge bg-secondary rounded-pill fs-6 fw-normal">
+                                                                <span th:text="${linea.cantidad}"></span> x <span
+                                                                    th:text="${#numbers.formatDecimal(linea.precioUnitario, 1, 2)}"></span>€
                                                             </span>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="bg-light p-3 border-top d-flex justify-content-between align-items-center">
-                                                    <span class="fs-5 fw-bold text-dark">Total:</span>
-                                                    <span class="fs-4 fw-bold text-primary"><span th:text="${#numbers.formatDecimal(pedido.total, 1, 2)}"></span>€</span>
+                                                <!-- Sumatorio Total del pedido -->
+                                                <div
+                                                    class="bg-light p-3 border-top d-flex justify-content-between align-items-center">
+                                                    <span class="fs-5 fw-bold text-dark">Total pagado:</span>
+                                                    <span class="fs-4 fw-bold text-primary"><span
+                                                            th:text="${#numbers.formatDecimal(pedido.total, 1, 2)}"></span>€</span>
                                                 </div>
                                             </div>
-                                            <div class="modal-footer border-0">
-                                                <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Cerrar</button>
+
+                                            <!-- Pie del modal -->
+                                            <div class="modal-footer border-0 bg-light">
+                                                <button type="button" class="btn btn-secondary w-100"
+                                                    data-bs-dismiss="modal">Cerrar</button>
                                             </div>
+
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Fin Modal -->
-
+                                <!-- Fin del Modal -->
                             </div>
                         </div>
                     </div>
@@ -144,27 +226,39 @@
         </div>
     </main>
 
+    <!-- Inclusión del pie de página -->
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
+    <!-- Scripts necesarios para AJAX y generación dinámica de códigos QR -->
     <script th:src="@{/js/ajax-demo.js}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Generar QRs
+        document.addEventListener("DOMContentLoaded", function () {
+            /**
+             * Generación de códigos QR:
+             * Busca todos los contenedores con la clase '.qrcode-container' y genera
+             * un lienzo QR en su interior leyendo el atributo 'data-qr-text' que les hemos
+             * puesto con Thymeleaf desde el servidor.
+             */
             var qrContainers = document.querySelectorAll(".qrcode-container");
-            qrContainers.forEach(function(container) {
+            qrContainers.forEach(function (container) {
                 var text = container.getAttribute("data-qr-text");
                 new QRCode(container, {
                     text: text,
                     width: 150,
                     height: 150,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H
+                    colorDark: "#000000",      // Color del dibujo
+                    colorLight: "#ffffff",     // Fondo
+                    correctLevel: QRCode.CorrectLevel.H
                 });
             });
 
-            // Si la URL termina en #pedidos, abrir automáticamente la pestaña de QRs
+            /**
+             * Utilidad para la experiencia de usuario:
+             * Si la URL contiene '#pedidos' al final (ej. si venimos redirigidos tras comprar),
+             * mostramos la pestaña de pedidos en vez de la de perfil por defecto.
+             */
             if (window.location.hash === '#pedidos') {
                 var triggerEl = document.querySelector('#pedidos-tab');
                 if (triggerEl) {

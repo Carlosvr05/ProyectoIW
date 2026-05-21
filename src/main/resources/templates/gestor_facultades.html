@@ -3,22 +3,27 @@
 
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
-    <title>IW: Gestor de Facultades</title>
+    <title>MenUni: Gestor de Facultades</title>
 </head>
 
 <body class="d-flex flex-column h-100">
+    <!-- Navegación principal -->
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
     <main class="flex-shrink-0">
         <div class="container mt-5 mb-5">
             <h1 class="mb-4 text-center">Gestor de Facultades</h1>
 
+            <!-- SECCIÓN 1: Formulario para añadir nuevas facultades/cafeterías -->
             <div class="card mb-5 mt-4 shadow">
                 <div class="card-header bg-success text-white">
                     <h4 class="mb-0">Añadir Nueva Facultad</h4>
                 </div>
                 <div class="card-body">
+                    <!-- Es vital el enctype="multipart/form-data" para poder procesar la subida del archivo de imagen -->
                     <form th:action="@{/facultades/gestor/addFacultad}" method="post" enctype="multipart/form-data">
+
+                        <!-- Fila 1: Nombre y Ubicación -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="nombre" class="form-label">Nombre de la Facultad</label>
@@ -32,12 +37,14 @@
                             </div>
                         </div>
 
+                        <!-- Fila 2: Descripción general -->
                         <div class="mb-3">
                             <label for="descripcion" class="form-label">Descripción</label>
                             <textarea class="form-control" id="descripcion" name="descripcion" rows="2"
                                 placeholder="Resumen de servicios, menús..." required></textarea>
                         </div>
 
+                        <!-- Fila 3: Horarios y Aforo (Nivel de ocupación) -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="horario" class="form-label">Horario</label>
@@ -54,11 +61,13 @@
                             </div>
                         </div>
 
+                        <!-- Subida de la imagen representativa -->
                         <div class="mb-3">
                             <label for="photo" class="form-label">Imagen de la Facultad</label>
                             <input type="file" class="form-control" id="photo" name="photo" accept="image/*" required>
                         </div>
 
+                        <!-- Botón de guardado -->
                         <div class="d-grid mt-4">
                             <button type="submit" class="btn btn-success btn-lg">Guardar Facultad</button>
                         </div>
@@ -66,6 +75,7 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN 2: Tabla de gestión de las facultades existentes -->
             <h2>Facultades en el Sistema</h2>
             <div class="table-responsive shadow-sm">
                 <table class="table table-hover table-bordered table-striped mt-3 align-middle">
@@ -80,14 +90,18 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- Iteración sobre la lista de facultades para generar las filas -->
                         <tr th:each="facultad : ${facultades}">
                             <td th:text="${facultad.id}" class="fw-bold text-center">1</td>
+
+                            <!-- Visualización de la imagen actual y opción de actualizarla -->
                             <td class="text-center">
                                 <img th:src="@{/facultades/{id}/pic(id=${facultad.id})}" alt="Foto"
                                     style="width: 80px; height: 60px; object-fit: cover;"
                                     class="rounded mb-2 d-block mx-auto shadow-sm"
                                     onerror="this.src='/img/MenUni.png';">
 
+                                <!-- Formulario independiente por fila para cambiar únicamente la foto -->
                                 <form th:action="@{/facultades/{id}/pic(id=${facultad.id})}" method="post"
                                     enctype="multipart/form-data" class="d-flex flex-column align-items-center">
                                     <input type="file" name="photo" class="form-control form-control-sm mb-1"
@@ -95,10 +109,16 @@
                                     <button type="submit" class="btn btn-primary btn-sm px-3">Actualizar</button>
                                 </form>
                             </td>
+
+                            <!-- Nombre de la facultad -->
                             <td>
                                 <strong th:text="${facultad.nombre}">Nombre</strong>
                             </td>
+
+                            <!-- Ubicación -->
                             <td class="small" th:text="${facultad.ubicacion}">Ubicación</td>
+
+                            <!-- Metadatos agrupados (descripción, horario, aforo) con diseño de insignias (badges) -->
                             <td>
                                 <div class="small">
                                     <p class="mb-1 text-muted" th:text="${facultad.descripcion}">Descripción...</p>
@@ -111,16 +131,20 @@
                                     </span>
                                 </div>
                             </td>
+
+                            <!-- Borrado de la facultad (Protegido por confirmación en JS) -->
                             <td class="text-center">
                                 <form th:action="@{/facultades/gestor/deleteFacultad/{id}(id=${facultad.id})}"
                                     method="post"
-                                    onsubmit="return confirm('¿Eliminar esta facultad permanentemente? Esto no borrará los platos asociados.');">
+                                    onsubmit="return confirm('¿Eliminar esta facultad permanentemente? Esto no borrará los platos del sistema, pero perderán su referencia a este lugar.');">
                                     <button type="submit" class="btn btn-outline-danger btn-sm">
                                         <i class="bi bi-trash"></i> Borrar
                                     </button>
                                 </form>
                             </td>
                         </tr>
+
+                        <!-- Fila vacía para mostrar si no existen datos -->
                         <tr th:if="${#lists.isEmpty(facultades)}">
                             <td colspan="6" class="text-center py-4 text-muted">No hay facultades registradas</td>
                         </tr>
@@ -130,6 +154,7 @@
         </div>
     </main>
 
+    <!-- Pie de página -->
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 </body>
 

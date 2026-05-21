@@ -18,11 +18,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Security configuration.
+ * Configuración de Seguridad de Spring Security.
  * 
- * Most security configuration will appear in this file, but according to 
- * https://spring.io/guides/topicals/spring-security-architecture/, it is not
- * a bad idea to also use method security (via @Secured annotations in methods) 
+ * En este fichero se centraliza la mayor parte de la configuración de seguridad
+ * de la aplicación web: qué rutas son públicas, cuáles requieren login y con
+ * qué
+ * roles. También define los "beans" necesarios para encriptar contraseñas
+ * y gestionar la autenticación.
  */
 @Configuration
 @EnableWebSecurity
@@ -32,92 +34,116 @@ public class SecurityConfig {
 	private Environment env;
 
 	/**
-	 * Main security configuration.
+	 * Configuración principal de seguridad (filtros HTTP).
 	 * 
-	 * The first rule that matches will be followed - so if a rule decides to grant access
+	 * The first rule that matches will be followed - so if a rule decides to grant
+	 * access
 	 * to a resource, a later rule cannot deny that access, and vice-versa.
 	 * 
-	 * To disable security entirely, just add an .antMatchers("**").permitAll() 
+	 * To disable security entirely, just add an .antMatchers("**").permitAll()
 	 * as a first rule. Note that this may break an application that expects to have
 	 * login information available.
 	 */
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		
-		// acceso a consola h2 en modo debug
+		// 1. Configuración de la consola base de datos H2 (Sólo activa en modo debug)
+		// La consola H2 requiere deshabilitar la protección CSRF y permitir iframes
+		// (frameOptions)
 		String debugProperty = env.getProperty("es.ucm.fdi.debug");
 		if (debugProperty != null && Boolean.parseBoolean(debugProperty.toLowerCase())) {
 			http.csrf(csrf -> csrf
-				.ignoringRequestMatchers("/h2/**")
-			);
+					.ignoringRequestMatchers("/h2/**"));
 			http.authorizeHttpRequests(authorize -> authorize
-				.requestMatchers("/h2/**").permitAll()  // <-- no login for h2 console
+					.requestMatchers("/h2/**").permitAll() // <-- Permite el acceso sin login a la consola H2
 			);
-      http.headers(header->header.frameOptions(frameOptions->frameOptions.sameOrigin()));
+			http.headers(header -> header.frameOptions(frameOptions -> frameOptions.sameOrigin()));
 		}
 
-    http
-			.csrf(csrf -> csrf
-				.ignoringRequestMatchers("/api/**")
-			)
-      .authorizeHttpRequests(authorize -> authorize
-				.requestMatchers("/css/**", "/js/**", "/img/**", "/", "/error").permitAll()
-				.requestMatchers("/api/**").permitAll()            // <-- public api access
-				.requestMatchers("/inicio/**").permitAll()  
-				.requestMatchers("/plato/ranking/**").permitAll()
-				.requestMatchers("/plato/**").permitAll() 
-				.requestMatchers("/contacto/**").permitAll()
-				.requestMatchers("/facultades/**").permitAll()
-				.requestMatchers("/carrito/**").permitAll()
-				.requestMatchers("/plato/gestor/**").hasAnyRole("ADMIN", "GESTOR_CAFETERIA")
-				.requestMatchers("/admin/**").hasRole("ADMIN")	   // <-- administration
-				.requestMatchers("/user/**").hasRole("USER")	     // <-- logged-in users
-				.requestMatchers(HttpMethod.GET, "/plato/*/pic", "/facultades/*/pic").permitAll()
-				.requestMatchers(HttpMethod.POST, "/facultades/*/pic").hasRole("ADMIN")
-				.requestMatchers(HttpMethod.POST, "/plato/*/pic").hasAnyRole("ADMIN", "GESTOR_CAFETERIA")
-				.anyRequest().authenticated()
-            )
-            .formLogin(formLogin -> formLogin
-                .loginPage("/login")
-                .permitAll()
-				.successHandler(loginSuccessHandler)  // <-- called when login Ok; can redirect
-            );
+		http
+				// 2. Desactivar CSRF para las peticiones a la API REST (para facilitar clientes
+				// externos)
+				.csrf(csrf -> csrf
+						.ignoringRequestMatchers("/api/**"))
+				// 3. Reglas de Autorización de Rutas (Endpoints)
+				.authorizeHttpRequests(authorize -> authorize
+						// Archivos estáticos y páginas de error siempre accesibles
+						.requestMatchers("/css/**", "/js/**", "/img/**", "/", "/error").permitAll()
+						// Endpoints de la API públicos
+						.requestMatchers("/api/**").permitAll()
+						// Páginas principales accesibles sin iniciar sesión
+						.requestMatchers("/inicio/**").permitAll()
+						.requestMatchers("/plato/ranking/**").permitAll()
+						.requestMatchers("/plato/**").permitAll()
+						.requestMatchers("/contacto/**").permitAll()
+						.requestMatchers("/facultades/**").permitAll()
+						.requestMatchers("/carrito/**").permitAll()
 
-        return http.build();
-    }	
-	
+						// Zona exclusiva de Gestores y Administradores
+						.requestMatchers("/plato/gestor/**").hasAnyRole("ADMIN", "GESTOR_CAFETERIA")
+						// Zona exclusiva de Administradores del sistema
+						.requestMatchers("/admin/**").hasRole("ADMIN")
+						// Endpoints de usuarios comunes (perfil, mensajería...) requieren rol USER
+						.requestMatchers("/user/**").hasRole("USER")
+
+						// Obtener imágenes es público para cualquiera
+						.requestMatchers(HttpMethod.GET, "/plato/*/pic", "/facultades/*/pic").permitAll()
+						// Sólo Administradores pueden cambiar la foto de una facultad
+						.requestMatchers(HttpMethod.POST, "/facultades/*/pic").hasRole("ADMIN")
+						// Administradores y Gestores pueden cambiar la foto de un plato
+						.requestMatchers(HttpMethod.POST, "/plato/*/pic").hasAnyRole("ADMIN", "GESTOR_CAFETERIA")
+
+						// Cualquier otra ruta que no se haya mencionado arriba requerirá estar
+						// autenticado
+						.anyRequest().authenticated())
+				// 4. Configuración del formulario de Login de Spring Security
+				.formLogin(formLogin -> formLogin
+						.loginPage("/login") // Especificamos nuestra vista personalizada de login
+						.permitAll() // Permitimos a todo el mundo acceder a esta vista
+						// handler invocado cuando el login es correcto (redirigirá al index o última
+						// página)
+						.successHandler(loginSuccessHandler));
+
+		return http.build();
+	}
+
 	/**
-	 * Declares a PasswordEncoder bean.
+	 * Declara el Bean encargado de encriptar contraseñas (PasswordEncoder).
 	 * 
-	 * This allows you to write, in any part of Spring-managed code, 
-	 * `@Autowired PasswordEncoder passwordEncoder`, and have it initialized
-	 * with the result of this method. 
+	 * Spring Security lo usa automáticamente al comprobar contraseñas en el login.
+	 * Además, al declararlo como Bean, podemos inyectarlo con @Autowired en
+	 * controladores (como UserController) para encriptar contraseñas de nuevos
+	 * usuarios.
 	 */
 	@Bean
 	public PasswordEncoder getPasswordEncoder() {
-		// by default in Spring Security 5, a wrapped new BCryptPasswordEncoder();
-		return PasswordEncoderFactories.createDelegatingPasswordEncoder(); 
-	}	
-	
+		// Crea un encoder inteligente que, por defecto, usa BCrypt para hashear
+		// contraseñas
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+	}
+
 	/**
-	 * Declares a springDataUserDetailsService bean.
-	 * 
-	 * This is used to translate from Spring Security users to in-application users.
+	 * Declara el Bean que traduce los Usuarios de nuestra Base de Datos a un
+	 * formato
+	 * comprensible por Spring Security (UserDetailsService).
 	 */
 	@Bean
 	public IwUserDetailsService springDataUserDetailsService() {
 		return new IwUserDetailsService();
-	} 
-	
+	}
+
 	/**
-	 * Declares an AuthenticationManager bean.
+	 * Declara el AuthenticationManager como Bean.
 	 * 
-	 * This can be used to auto-login into the site after creating new users, for example.
-	 * See https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/index.html#publish-authentication-manager-bean
+	 * Este gestor de autenticación coordina el UserDetailsService (para buscar al
+	 * usuario)
+	 * y el PasswordEncoder (para validar que la contraseña tecleada coincide con el
+	 * hash).
+	 * Al hacerlo Bean, podríamos usarlo manualmente para auto-loguear usuarios
+	 * recién registrados.
 	 */
-	 @Bean
-	 public AuthenticationManager authenticationManager(
+	@Bean
+	public AuthenticationManager authenticationManager(
 			UserDetailsService userDetailsService,
 			PasswordEncoder passwordEncoder) {
 		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
@@ -126,7 +152,7 @@ public class SecurityConfig {
 
 		return new ProviderManager(authenticationProvider);
 	}
-	 
+
 	@Autowired
 	private LoginSuccessHandler loginSuccessHandler;
 }

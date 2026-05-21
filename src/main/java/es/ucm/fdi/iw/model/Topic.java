@@ -18,29 +18,37 @@ import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 
 /**
- * A group of users, with an associated chat.
+ * Entidad que representa un "Tema", Grupo o Sala de Chat.
+ * Agrupa a varios usuarios (members) y guarda el historial de mensajes (messages)
+ * que han sido enviados dentro de este contexto.
  */
-@Data
-@Entity
+@Data // Genera getters, setters, toString, equals y hashCode automáticamente vía Lombok
+@Entity // Entidad JPA (será una tabla en la BD)
 @NamedQueries({
+  // Consulta rápida por JPQL para encontrar un Topic buscando por su clave única ('key')
   @NamedQuery(name = "Topic.byKey", query = "SELECT t FROM Topic t "
       + "WHERE t.key = :key")
 })
 public class Topic {
 
-  @Id
+  @Id // Clave primaria
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
   @SequenceGenerator(name = "gen", sequenceName = "gen")
   private long id;
 
+  // Relación Muchos-A-Muchos: Un Topic tiene múltiples usuarios y un usuario pertenece a múltiples Topics.
+  // Esta es la entidad "propietaria" de la relación bidireccional (ver mappedBy en User)
   @ManyToMany
   private List<User> members = new ArrayList<>();
-  private String name;
-  @Column(nullable = false, unique = true, name="topic_key") // key is reserved
-  private String key;
+  
+  private String name; // Nombre visual del grupo (ej: "Soporte Técnico")
+  
+  @Column(nullable = false, unique = true, name="topic_key") // 'key' es una palabra reservada en SQL, por eso se renombra la columna
+  private String key; // Identificador único interno para el enrutamiento del chat (ej: "soporte-123")
 
+  // Relación Uno-A-Muchos: Un Topic contiene muchos mensajes
   @OneToMany
-  @JoinColumn(name = "topic_id")
+  @JoinColumn(name = "topic_id") // Se guarda el ID del Topic como clave foránea en cada Mensaje
   private List<Message> messages = new ArrayList<>();
 
   @Override

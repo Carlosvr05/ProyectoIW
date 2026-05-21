@@ -35,6 +35,11 @@ import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Controlador de la entidad Plato.
+ * Gestiona el menú de comida: creación de nuevos platos, asociación con Facultades,
+ * imágenes de los mismos y generación de la carta al cliente y ránkings.
+ */
 @Controller
 @RequestMapping("/plato")
 public class PlatoController {
@@ -44,22 +49,31 @@ public class PlatoController {
 
     private static final Logger log = LogManager.getLogger(PlatoController.class);
 
+    /**
+     * Introduce automáticamente variables de sesión en todas las peticiones a '/plato'.
+     */
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
         for (String name : new String[] { "u", "url", "ws", "topics"}) {
-        model.addAttribute(name, session.getAttribute(name));
+            model.addAttribute(name, session.getAttribute(name));
         }
     }
 
     @Autowired
     private LocalData localData;
 
+    /**
+     * Obtiene una imagen genérica por si un plato no tiene foto definida.
+     */
     private static InputStream defaultPic() {
         return new BufferedInputStream(Objects.requireNonNull(
             PlatoController.class.getClassLoader().getResourceAsStream(
                 "static/img/MenUni.png"))); // Una imagen por defecto para platos
     }
 
+    /**
+     * Sirve la foto particular de un plato mediante Stream (directo al navegador).
+     */
     @GetMapping("/{id}/pic")
     public StreamingResponseBody getPic(@PathVariable long id) throws IOException {
         File f = localData.getFile("plato", "" + id + ".jpg");
@@ -68,31 +82,38 @@ public class PlatoController {
         return os -> FileCopyUtils.copy(in, os);
     }
 
+    /**
+     * Sube y actualiza la imagen de un plato. 
+     * Está protegido y sólo pueden hacerlo roles administradores o gestores.
+     */
     @PostMapping("/{id}/pic")
     @Transactional
     public String setPic(@RequestParam("photo") MultipartFile photo, @PathVariable long id, 
                         HttpSession session) throws IOException {
         
-        // Solo el ADMIN puede cambiar fotos de platos
-        // En lugar de session.getAttribute, comprueba si existe para evitar el cuelgue
+        // Comprueba si existe un usuario logueado en sesión
         Object userInSession = session.getAttribute("u");
         if (userInSession == null) {
             log.warn("Intento de subir foto sin usuario en sesión");
             return "redirect:/login"; 
         }
         
+        // Verificación de roles (Admin o Gestor)
         User requester = (User) userInSession;
         if (!requester.hasRole(User.Role.ADMIN) && !requester.hasRole(User.Role.GESTOR_CAFETERIA)) {
             log.warn("Usuario {} intentó subir foto sin ser ADMIN o GESTOR_CAFETERIA", requester.getUsername());
-            throw new UserController.NoEsTuPerfilException();
+            throw new UserController.NoEsTuPerfilException(); // Lanza un 403 HTTP
         }
 
+        // Obtener la carpeta destino
         File f = localData.getFile("plato", "" + id + ".jpg");
-        // Crea la carpeta "plato" si es la primera vez que subes una foto
+        
+        // Crea la carpeta "plato" físicamente si no existiera
         if (f.getParentFile() != null && !f.getParentFile().exists()) {
             f.getParentFile().mkdirs();
         }
 
+        // Si se envió un archivo real, lo escribimos en disco
         if (!photo.isEmpty()) {
             try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(f))) {
                 byte[] bytes = photo.getBytes();
@@ -104,13 +125,20 @@ public class PlatoController {
         return "redirect:/plato/gestor";
     }
 
+    /**
+     * VISTA PÚBLICA: Carta general de todos los platos disponibles en el sistema.
+     */
     @GetMapping
     public String plato(Model model) {
         List<Plato> listaplatos = entityManager.createQuery("SELECT p FROM Plato p", Plato.class).getResultList();
         model.addAttribute("platos", listaplatos);
-        return "plato";
+        return "plato"; // Renderiza plato.html
     }
 
+    /**
+     * VISTA PÚBLICA FILTRADA: Muestra la carta limitándose a los platos que se 
+     * sirven en una Facultad en concreto.
+     */
     @GetMapping("/facultad/{id}")
     public String platosPorFacultad(@PathVariable long id, Model model) {
         Facultad f = entityManager.find(Facultad.class, id);
@@ -122,34 +150,47 @@ public class PlatoController {
         return "plato";
     }
 
+    /**
+     * VISTA PÚBLICA: Ránking. Envía la lista de platos a la vista para ser mostrados por su puntuación.
+     */
     @GetMapping("/ranking")
     public String ranking(Model model) {
         List<Plato> listaplatos = entityManager.createQuery("SELECT p FROM Plato p", Plato.class).getResultList();
         model.addAttribute("platos", listaplatos);
-        return "ranking";
+        return "ranking"; // Renderiza ranking.html
     }
 
+    /**
+     * VISTA GESTOR: Interfaz de administración del menú (Crear platos, borrarlos...).
+     */
     @GetMapping("/gestor")
     public String managePlatos(Model model) {
       log.info("Admin accede a la gestión de platos");
       List<Plato> platos = entityManager.createQuery("select p from Plato p", Plato.class).getResultList();
       List<Facultad> facultades = entityManager.createQuery("select f from Facultad f", Facultad.class).getResultList();
+      
       model.addAttribute("platos", platos);
       model.addAttribute("facultades", facultades);
-      return "gestor"; 
+      return "gestor"; // Renderiza gestor.html
     }
 
+    /**
+     * GESTOR: Crea un nuevo plato, establece en qué Facultades se sirve, y sube su foto inicial.
+     */
     @PostMapping("/gestor/addPlato")
     @Transactional
     public String addPlato(@RequestParam String nombre, @RequestParam String descripcion,
             @RequestParam double precio, @RequestParam("photo") MultipartFile photo,
             @RequestParam(required = false) List<Long> facultadIds) {
+        
+        // 1. Configurar la entidad
         Plato p = new Plato();
         p.setNombre(nombre);
         p.setDescripcion(descripcion);
         p.setPrecio(precio);
         p.setActivo(true);
         
+        // Relacionar este plato con las facultades enviadas desde los checkboxes
         if (facultadIds != null && !facultadIds.isEmpty()) {
             Set<Facultad> facultadesAsignadas = new HashSet<>();
             for (Long id : facultadIds) {
@@ -158,8 +199,10 @@ public class PlatoController {
             }
             p.setFacultades(facultadesAsignadas);
         }
+        
         entityManager.persist(p);
-        entityManager.flush();
+        entityManager.flush(); // Para obtener el ID autogenerado
+        
         // 2. Guardar el archivo físicamente usando el ID generado
         if (!photo.isEmpty()) {
             File f = localData.getFile("plato", "" + p.getId() + ".jpg");
@@ -174,11 +217,15 @@ public class PlatoController {
         return "redirect:/plato/gestor";
     }
 
+    /**
+     * GESTOR: Elimina un plato de la base de datos permanentemente.
+     */
     @PostMapping("/gestor/deletePlato/{id}")
     @Transactional
     public String deletePlato(@PathVariable long id) {
         Plato p = entityManager.find(Plato.class, id);
         if (p != null) {
+            // Desasociar antes de eliminar para mantener integridad referencial
             p.getFacultades().clear(); 
             entityManager.remove(p);
         }

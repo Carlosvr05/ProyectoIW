@@ -7,72 +7,106 @@
 </head>
 
 <body class="d-flex flex-column h-100">
+    <!-- Navegación principal -->
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
     <main class="flex-shrink-0">
         <div class="container mt-5 mb-5">
-            
+
+            <!-- Encabezado y buscador -->
             <div class="row align-items-center mb-5">
                 <div class="col-md-6">
                     <h1 class="display-5 fw-bold">Nuestras Cafeterías</h1>
                     <p class="lead text-muted">Selecciona tu facultad para ver el menú de hoy.</p>
                 </div>
+                <!-- Buscador dinámico (filtrado con Javascript) -->
                 <div class="col-md-6">
-                    <input class="form-control form-control-lg" id="buscadorFacultades" type="text" placeholder="Buscar facultad (ej. Derecho)...">
+                    <input class="form-control form-control-lg" id="buscadorFacultades" type="text"
+                        placeholder="Buscar facultad (ej. Derecho)...">
                 </div>
             </div>
 
+            <!-- Listado de Facultades -->
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                <!-- Bucle para mostrar todas las facultades dinámicamente -->
+
+                <!-- Bucle Thymeleaf: Crea una tarjeta por cada facultad registrada en la BBDD -->
                 <div class="col facultad-item" th:each="f : ${facultades}">
                     <div class="card h-100 shadow-sm border-0">
+
+                        <!-- Contenedor de la imagen y etiqueta superior de estado -->
                         <div class="position-relative">
                             <span class="position-absolute top-0 end-0 badge bg-success m-2">Abierto</span>
-                            <img th:src="@{/facultades/{id}/pic(id=${f.id})}" class="card-img-top" th:alt="${f.nombre}" style="height: 200px; object-fit: cover;">
+                            <img th:src="@{/facultades/{id}/pic(id=${f.id})}" class="card-img-top" th:alt="${f.nombre}"
+                                style="height: 200px; object-fit: cover;" onerror="this.src='/img/MenUni.png';">
                         </div>
+
+                        <!-- Cuerpo de la tarjeta con información principal -->
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title nombre-facultad" th:text="${f.nombre}">Nombre de la Facultad</h5>
+
+                            <!-- Ubicación -->
                             <p class="card-text text-muted small">
                                 <i class="bi bi-geo-alt-fill"></i> <span th:text="${f.ubicacion}">Ubicación</span>
                             </p>
+
+                            <!-- Descripción -->
                             <p class="card-text" th:text="${f.descripcion}">
                                 Descripción de la facultad y sus servicios.
                             </p>
+
+                            <!-- Metadatos de la facultad (horario y aforo) ubicados al final de la tarjeta -->
                             <ul class="list-unstyled small text-muted mb-3 mt-auto">
                                 <li><strong>Horario:</strong> <span th:text="${f.horario}">08:00 - 20:00</span></li>
                                 <li><strong>Aforo actual:</strong> <span th:text="${f.aforo}">Medio</span></li>
                             </ul>
                         </div>
+
+                        <!-- Pie de la tarjeta: Botón de navegación al menú específico -->
                         <div class="card-footer bg-white border-top-0 pb-3">
                             <a th:href="@{/plato/facultad/{id}(id=${f.id})}" class="btn btn-primary w-100">Ver Menú</a>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </main>
 
+    <!-- Pie de página -->
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
+    <!-- Lógica de filtrado en tiempo real -->
     <script>
-        document.getElementById('buscadorFacultades').addEventListener('keyup', function() {
-            let texto = this.value.toLowerCase();
-            // Buscamos solo los elementos que tengan la clase 'facultad-item'
-            let tarjetas = document.querySelectorAll('.facultad-item');
+        document.addEventListener('DOMContentLoaded', () => {
+            const buscador = document.getElementById('buscadorFacultades');
 
-            tarjetas.forEach(card => {
-                // Dentro de cada tarjeta, buscamos el título con clase 'nombre-facultad'
-                let nombre = card.querySelector('.nombre-facultad').textContent.toLowerCase();
-                
-                if (nombre.includes(texto)) {
-                    card.style.display = ''; // Mostrar si coincide
-                } else {
-                    card.style.display = 'none'; // Ocultar si no coincide
-                }
+            /**
+             * Escucha cada vez que el usuario levanta una tecla (keyup) en el buscador.
+             * Oculta las tarjetas que no coinciden con el texto introducido.
+             */
+            buscador.addEventListener('keyup', function () {
+                // Convertimos el texto buscado a minúsculas para comparar sin importar mayúsculas
+                let texto = this.value.toLowerCase();
+
+                // Seleccionamos todas las tarjetas usando la clase 'facultad-item'
+                let tarjetas = document.querySelectorAll('.facultad-item');
+
+                tarjetas.forEach(card => {
+                    // Extraemos el nombre específico de la facultad dentro de cada tarjeta
+                    let nombre = card.querySelector('.nombre-facultad').textContent.toLowerCase();
+
+                    // Si el nombre incluye lo que el usuario ha escrito, mostramos la tarjeta
+                    if (nombre.includes(texto)) {
+                        card.style.display = ''; // Vacío resetea al valor por defecto css
+                    } else {
+                        // Si no, la ocultamos completamente
+                        card.style.display = 'none';
+                    }
+                });
             });
         });
     </script>
-    
+
 </body>
 
 </html>

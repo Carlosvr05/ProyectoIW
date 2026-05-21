@@ -3,16 +3,41 @@
 
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
-    <title>IW: Welcome</title>
+    <title>MenUni: Ranking</title>
+
+    <!-- Estilos específicos para el slider de valoración -->
+    <style>
+        .star-slider {
+            display: inline-flex;
+            cursor: grab;
+            font-size: 2.5rem;
+            color: #ddd;
+        }
+
+        .star-slider:active {
+            cursor: grabbing;
+        }
+
+        .star-slider .star {
+            transition: all 0.1s;
+        }
+
+        .vote-widget {
+            user-select: none;
+            touch-action: none;
+        }
+    </style>
 </head>
 
 <body class="d-flex flex-column h-100">
+    <!-- Navegación principal -->
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
     <main class="flex-shrink-0">
         <div class="container">
             <h1 class="mt-5 mb-4">🏆 Top Platos UCM</h1>
-            
+
+            <!-- Controles de filtrado / ordenación -->
             <div class="mb-4">
                 <span class="me-2 fw-bold">Ordenar por:</span>
                 <button class="btn btn-outline-secondary btn-sm" onclick="ordenarPlatos('nombre')">
@@ -20,42 +45,58 @@
                 </button>
             </div>
 
+            <!-- Contenedor principal de la lista de platos -->
             <div id="contenedor-platos" class="row row-cols-1 row-cols-md-3 g-4 platos">
-                
+
+                <!-- Bucle para generar cada tarjeta de plato -->
                 <div class="col plato-card" th:each="p : ${platos}" th:data-nombre="${p.nombre}">
                     <div class="card h-100 shadow-sm">
-                        <img th:src="@{/plato/{id}/pic(id=${p.id})}" 
-                                    class="card-img-top" 
-                                    th:alt="${p.nombre}" 
-                                    style="height: 300px; object-fit: cover;"
-                                    onerror="this.src='/img/MenUni.png';">
+
+                        <!-- Imagen del plato -->
+                        <img th:src="@{/plato/{id}/pic(id=${p.id})}" class="card-img-top" th:alt="${p.nombre}"
+                            style="height: 300px; object-fit: cover;" onerror="this.src='/img/MenUni.png';">
+
+                        <!-- Detalles y valoraciones -->
                         <div class="card-body">
-                            <h5 class="card-title " th:text = "${p.nombre}">Nombre plato</h5>
-                            <div class="mb-3"> 
-                                <select class="form-select form-select-lg select-facultad shadow-sm" name="facultadId" th:data-plato-id="${p.id}" onchange="actualizarValoracion(this)">
-                                    <option th:each="f : ${p.facultades}" 
-                                            th:value="${f.id}" 
-                                            th:text="${f.nombre}">Facultad</option>
+                            <h5 class="card-title" th:text="${p.nombre}">Nombre plato</h5>
+
+                            <!-- Selección de Facultad -->
+                            <div class="mb-3">
+                                <select class="form-select form-select-lg select-facultad shadow-sm" name="facultadId"
+                                    th:data-plato-id="${p.id}" onchange="actualizarValoracion(this)">
+                                    <option th:each="f : ${p.facultades}" th:value="${f.id}" th:text="${f.nombre}">
+                                        Facultad</option>
                                 </select>
                             </div>
+
+                            <!-- Promedio de valoraciones y cantidad de votos -->
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge bg-warning text-dark fs-6 val-badge" th:id="'val-badge-' + ${p.id}">Cargando...</span>
+                                <span class="badge bg-warning text-dark fs-6 val-badge" th:id="'val-badge-' + ${p.id}">
+                                    Cargando...
+                                </span>
                                 <div>
                                     <small class="text-muted val-count" th:id="'val-count-' + ${p.id}">...</small>
                                 </div>
                             </div>
-                            <!-- Widget de estrellas (Slider JS) -->
-                            <div class="vote-widget text-center" th:id="'vote-widget-' + ${p.id}" style="display: none; user-select: none; touch-action: none;">
-                                <div class="star-slider" th:data-plato="${p.id}" style="display: inline-flex; cursor: grab; font-size: 2.5rem; color: #ddd;">
-                                    <span class="star" style="transition: all 0.1s;">★</span>
-                                    <span class="star" style="transition: all 0.1s;">★</span>
-                                    <span class="star" style="transition: all 0.1s;">★</span>
-                                    <span class="star" style="transition: all 0.1s;">★</span>
-                                    <span class="star" style="transition: all 0.1s;">★</span>
+
+                            <!-- Widget de estrellas (Oculto por defecto, se muestra mediante JS) -->
+                            <div class="vote-widget text-center" th:id="'vote-widget-' + ${p.id}"
+                                style="display: none;">
+                                <div class="star-slider" th:data-plato="${p.id}">
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
                                 </div>
-                                <div class="text-muted small mt-1"><i class="bi bi-arrows-collapse"></i> Desliza para valorar</div>
+                                <div class="text-muted small mt-1">
+                                    <i class="bi bi-arrows-collapse"></i> Desliza para valorar
+                                </div>
                             </div>
-                            <div class="vote-success text-success text-center mt-2 fw-bold" th:id="'vote-success-' + ${p.id}" style="display: none;">
+
+                            <!-- Mensaje de éxito al votar -->
+                            <div class="vote-success text-success text-center mt-2 fw-bold"
+                                th:id="'vote-success-' + ${p.id}" style="display: none;">
                                 Tu voto: <span class="user-vote-val"></span> ⭐
                             </div>
                         </div>
@@ -66,66 +107,81 @@
         </div>
     </main>
 
+    <!-- Inclusión del pie de página -->
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
+    <!-- Script principal de lógica de ranking -->
     <script th:inline="javascript">
-        // Token CSRF para las peticiones POST
+        // 1. Configuramos el Token CSRF necesario para enviar peticiones POST de forma segura (Spring Security)
         const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
         const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
 
+        // 2. Al cargar la página inicializamos los widgets
         document.addEventListener("DOMContentLoaded", () => {
-            // Cargar valoraciones iniciales para todos los selects
+            // Obtenemos las valoraciones actuales para cada plato según la primera facultad seleccionada
             document.querySelectorAll('.select-facultad').forEach(select => {
                 actualizarValoracion(select);
             });
+            // Activamos la interacción táctil/ratón de las estrellas
             setupStarSliders();
         });
 
+        /**
+         * Inicializa la lógica de "arrastrar y soltar" (deslizar) en el widget de estrellas
+         */
         function setupStarSliders() {
             document.querySelectorAll('.star-slider').forEach(slider => {
-                if(slider.dataset.initialized) return;
+                if (slider.dataset.initialized) return; // Evitar inicializar dos veces
                 slider.dataset.initialized = 'true';
-                
+
                 let isDragging = false;
                 let currentRating = 0;
 
+                // Función que colorea las estrellas dependiendo de la posición del ratón/dedo
                 const updateStars = (clientX) => {
                     const rect = slider.getBoundingClientRect();
                     let x = clientX - rect.left;
                     let width = rect.width;
+
+                    // Límites
                     if (x < 0) x = 0;
                     if (x > width) x = width;
-                    
+
+                    // Calcular puntuación basada en el ancho (1 a 5)
                     let rating = Math.ceil((x / width) * 5);
                     if (rating === 0 && x > 0) rating = 1;
-                    if (clientX === -999) rating = 0; // reset
+                    if (clientX === -999) rating = 0; // -999 se usa para resetear cuando el ratón sale
+
                     currentRating = rating;
 
+                    // Aplicar estilos visuales a cada estrella
                     const stars = slider.querySelectorAll('.star');
                     stars.forEach((star, index) => {
                         if (index < rating) {
-                            star.style.color = '#ffc107'; 
+                            star.style.color = '#ffc107'; // Amarillo
                             star.style.transform = 'scale(1.15)';
                         } else {
-                            star.style.color = '#ddd'; 
+                            star.style.color = '#ddd'; // Gris
                             star.style.transform = 'scale(1)';
                         }
                     });
                 };
 
+                // Evento al presionar (click / toque)
                 slider.addEventListener('pointerdown', (e) => {
                     isDragging = true;
                     slider.setPointerCapture(e.pointerId);
-                    slider.style.cursor = 'grabbing';
                     updateStars(e.clientX);
                 });
 
+                // Evento al moverse deslizando
                 slider.addEventListener('pointermove', (e) => {
                     if (isDragging || e.pointerType === 'mouse') {
                         updateStars(e.clientX);
                     }
                 });
 
+                // Evento al salir del área sin soltar
                 slider.addEventListener('pointerleave', (e) => {
                     if (!isDragging) {
                         currentRating = 0;
@@ -133,12 +189,12 @@
                     }
                 });
 
+                // Evento al soltar (se registra el voto)
                 slider.addEventListener('pointerup', (e) => {
                     if (isDragging) {
                         isDragging = false;
                         slider.releasePointerCapture(e.pointerId);
-                        slider.style.cursor = 'grab';
-                        
+
                         if (currentRating > 0) {
                             votar(slider, currentRating);
                         }
@@ -147,30 +203,33 @@
             });
         }
 
+        /**
+         * Pide al servidor los datos de valoración de un plato en una facultad concreta
+         */
         function actualizarValoracion(selectElement) {
             const platoId = selectElement.getAttribute('data-plato-id');
             const facultadId = selectElement.value;
             if (!facultadId) return;
 
+            // Petición GET a la API
             fetch(`/api/plato/${platoId}/facultad/${facultadId}/rating`)
                 .then(res => res.json())
                 .then(data => {
+                    // Actualizamos las etiquetas de "media de valoración" y "cantidad de votos"
                     document.getElementById(`val-badge-${platoId}`).innerText = `⭐ ${data.average}`;
                     document.getElementById(`val-count-${platoId}`).innerText = `${data.count} votos`;
 
                     const widget = document.getElementById(`vote-widget-${platoId}`);
                     const successDiv = document.getElementById(`vote-success-${platoId}`);
-                    
-                    // Si el usuario no está logueado o ya ha votado, no mostramos las estrellas
-                    // Supongamos que si userVote == -1, no ha votado.
-                    // Si no está logueado, userVote será -1 también pero luego al votar dará error.
+
+                    // Comprobamos si el usuario actual ya ha votado este plato
                     if (data.userVote > 0) {
+                        // Si ya votó, ocultamos las estrellas y mostramos su puntuación
                         widget.style.display = 'none';
                         successDiv.style.display = 'block';
                         successDiv.querySelector('.user-vote-val').innerText = data.userVote;
                     } else {
-                        // Solo enseñamos el widget si application.u existe... 
-                        // pero la lógica la controla el endpoint (daría error si no logueado)
+                        // Si no ha votado, mostramos el widget de estrellas para que vote
                         widget.style.display = 'block';
                         successDiv.style.display = 'none';
                     }
@@ -178,41 +237,51 @@
                 .catch(err => console.error("Error cargando valoracion:", err));
         }
 
+        /**
+         * Envía el voto del usuario al servidor usando una petición POST
+         */
         function votar(slider, puntuacion) {
             const platoId = slider.getAttribute('data-plato');
             const selectElement = document.querySelector(`.select-facultad[data-plato-id="${platoId}"]`);
             const facultadId = selectElement.value;
 
+            // Petición POST a la API enviando la puntuación
             fetch(`/api/plato/${platoId}/facultad/${facultadId}/vote`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    [csrfHeader]: csrfToken
+                    [csrfHeader]: csrfToken // Pasamos el token de seguridad
                 },
                 body: JSON.stringify({ puntuacion: puntuacion })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    // Refrescar los datos visualmente
-                    actualizarValoracion(selectElement);
-                }
-            })
-            .catch(err => console.error("Error votando:", err));
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error); // Si hay un error (por ej. no estar logueado), mostramos alerta
+                    } else {
+                        // Si el voto fue exitoso, refrescamos los datos visuales
+                        actualizarValoracion(selectElement);
+                    }
+                })
+                .catch(err => console.error("Error votando:", err));
         }
 
+        /**
+         * Ordena las tarjetas de los platos en pantalla
+         */
         function ordenarPlatos(criterio) {
             const contenedor = document.getElementById('contenedor-platos');
+            // Convertimos la lista HTMLCollection a un Array para poder ordenarla
             const tarjetas = Array.from(contenedor.getElementsByClassName('plato-card'));
 
             tarjetas.sort((a, b) => {
                 if (criterio === 'nombre') {
+                    // Orden alfabético (A-Z)
                     return a.dataset.nombre.localeCompare(b.dataset.nombre);
                 }
             });
 
+            // Volvemos a añadir las tarjetas ordenadas al contenedor
             tarjetas.forEach(tarjeta => contenedor.appendChild(tarjeta));
         }
     </script>
