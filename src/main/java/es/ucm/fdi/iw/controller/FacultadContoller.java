@@ -81,7 +81,8 @@ public class FacultadContoller {
         }
 
         File f = localData.getFile("facultad", "" + id + ".jpg");
-        // Crea la carpeta "facultad" en el sistema de archivos si no existía previamente
+        // Crea la carpeta "facultad" en el sistema de archivos si no existía
+        // previamente
         if (f.getParentFile() != null && !f.getParentFile().exists()) {
             f.getParentFile().mkdirs();
         }
@@ -111,11 +112,11 @@ public class FacultadContoller {
      * Renderiza 'facultades.html'.
      */
     @GetMapping // Atiende peticiones directas a "/facultades"
-    public String facu(Model model) { 
+    public String facu(Model model) {
         List<Facultad> facultades = entityManager.createQuery("SELECT f FROM Facultad f", Facultad.class)
                 .getResultList();
         model.addAttribute("facultades", facultades);
-        return "facultades"; 
+        return "facultades";
     }
 
     /**
@@ -150,7 +151,8 @@ public class FacultadContoller {
 
         // 2. Persistir en la BD
         entityManager.persist(f);
-        entityManager.flush(); // Fuerza la escritura para que la BD le asigne un ID (necesario para el nombre de la foto)
+        entityManager.flush(); // Fuerza la escritura para que la BD le asigne un ID (necesario para el nombre
+                               // de la foto)
 
         // 3. Procesar y guardar el archivo de foto físicamente
         if (!photo.isEmpty()) {
@@ -169,7 +171,8 @@ public class FacultadContoller {
     }
 
     /**
-     * GESTOR: Borra una facultad existente y desvincula los platos asignados a ella.
+     * GESTOR: Borra una facultad existente y desvincula los platos asignados a
+     * ella.
      */
     @PostMapping("/gestor/deleteFacultad/{id}")
     @Transactional
@@ -179,10 +182,31 @@ public class FacultadContoller {
             // Desvincular de los platos antes de borrar (rompe la relación ManyToMany)
             // de forma segura para no crear excepciones por violaciones de clave foránea.
             f.getPlatos().forEach(p -> p.getFacultades().remove(f));
-            
+
             // Borrado definitivo
             entityManager.remove(f);
             log.info("Facultad {} eliminada", id);
+        }
+        return "redirect:/facultades/gestor";
+    }
+
+    /**
+     * GESTOR: Edita una facultad existente.
+     */
+    @PostMapping("/gestor/editFacultad/{id}")
+    @Transactional
+    public String editFacultad(@PathVariable long id, @RequestParam String nombre, @RequestParam String ubicacion,
+            @RequestParam String descripcion, @RequestParam String horario,
+            @RequestParam String aforo) {
+
+        Facultad f = entityManager.find(Facultad.class, id);
+        if (f != null) {
+            f.setNombre(nombre);
+            f.setUbicacion(ubicacion);
+            f.setDescripcion(descripcion);
+            f.setHorario(horario);
+            f.setAforo(aforo);
+            log.info("Facultad {} editada", id);
         }
         return "redirect:/facultades/gestor";
     }

@@ -32,34 +32,43 @@
                         <li class="nav-item"><a class="nav-link" th:href="@{/facultades}">Facultades</a></li>
                         <li class="nav-item"><a class="nav-link" th:href="@{/contacto}">Contacto</a></li>
                         <li class="nav-item"><a class="nav-link" th:href="@{/carrito}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-                                class="bi bi-cart-fill" viewBox="0 0 16 16">
-                                <path
-                                    d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
-                            </svg>
-                        </a></li>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                                    class="bi bi-cart-fill" viewBox="0 0 16 16">
+                                    <path
+                                        d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
+                                </svg>
+                            </a></li>
                         <!-- Eliminado el icono sutil de aquí -->
 
                         <!-- Paginas para usuarios logueados y administradores -->
                         <th:block th:if="${u}">
                             <li class="nav-item mx-2 d-flex align-items-center" th:if="${u.hasRole('ADMIN')}">
-                                <a class="nav-link fw-bold text-success" th:href="@{/facultades/gestor}">Gestor Facultades</a>
+                                <a class="nav-link fw-bold text-success" th:href="@{/facultades/gestor}">Gestor
+                                    Facultades</a>
                             </li>
-                            <li class="nav-item mx-2 d-flex align-items-center" th:if="${u.hasRole('ADMIN') or u.hasRole('GESTOR_CAFETERIA')}">
+                            <li class="nav-item mx-2 d-flex align-items-center"
+                                th:if="${u.hasRole('ADMIN') or u.hasRole('GESTOR_CAFETERIA')}">
                                 <a class="nav-link fw-bold text-success" th:href="@{/plato/gestor}">Gestor Platos</a>
                             </li>
                             <li class="nav-item mx-3 d-flex align-items-center">
-                                <a class="btn btn-primary btn-sm fw-bold text-white shadow-sm" 
-                                   th:href="@{/user/{id}(id=${u.id})} + '#pedidos'">
-                                   Mis QRs 📱
+                                <a class="btn btn-primary btn-sm fw-bold text-white shadow-sm"
+                                    th:href="@{/user/{id}(id=${u.id})} + '#pedidos'">
+                                    Mis QRs 📱
                                 </a>
                             </li>
-                            <li class="nav-item mx-3">
-                                <div class="navbar-text">
-                                    <label>Saldo </label>
-                                    <span th:if="${u.hasRole('USER')}" th:text="${u.money}"
+                            <li class="nav-item mx-3 d-flex align-items-center"
+                                th:unless="${u.hasRole('ADMIN') or u.hasRole('GESTOR_CAFETERIA')}">
+                                <div class="navbar-text me-2">
+                                    <label>Saldo: </label>
+                                    <span th:text="${#numbers.formatDecimal(u.money, 1, 2) + ' €'}"
                                         class="badge bg-success">Saldo</span>
                                 </div>
+                                <form th:action="@{/user/add-money}" method="post" class="m-0">
+                                    <button type="submit" class="btn btn-sm btn-outline-success px-1 py-0"
+                                        title="Añadir 1000€" style="font-size: 0.75rem;">
+                                        <i class="bi bi-plus"></i> +1000€
+                                    </button>
+                                </form>
                             </li>
 
                             <li class="nav-item mx-2">

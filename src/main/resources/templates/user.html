@@ -22,7 +22,7 @@
                 </button>
             </li>
             <!-- Pestaña 2: Pedidos y Códigos QR -->
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" th:if="${u != null and (u.id == user.id or u.hasRole('ADMIN'))}">
                 <button class="nav-link" id="pedidos-tab" data-bs-toggle="tab" data-bs-target="#pedidos" type="button"
                     role="tab" aria-controls="pedidos" aria-selected="false">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
@@ -98,7 +98,8 @@
                             </div>
 
                             <!-- Envío de mensajes -->
-                            <form th:action="@{/user/__${user.id}__/msg}" method="POST">
+                            <form th:if="${u != null and u.id != user.id}" th:action="@{/user/__${user.id}__/msg}"
+                                method="POST">
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="message"
                                         placeholder="Escribe un mensaje..." required />
@@ -113,7 +114,8 @@
             </div>
 
             <!-- ===================== PESTAÑA 2: MIS PEDIDOS ===================== -->
-            <div class="tab-pane fade" id="pedidos" role="tabpanel" aria-labelledby="pedidos-tab">
+            <div class="tab-pane fade" id="pedidos" role="tabpanel" aria-labelledby="pedidos-tab"
+                th:if="${u != null and (u.id == user.id or u.hasRole('ADMIN'))}">
                 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                     <h3 class="mb-0 text-primary"><i class="bi bi-bag-check"></i> Mis Pedidos y Códigos QR</h3>
                     <span class="badge bg-primary fs-6 shadow-sm"><i class="bi bi-upc-scan"></i> Escanea para
@@ -140,24 +142,36 @@
                                     <span
                                         class="badge rounded-pill bg-light text-primary border border-primary px-3 py-2"
                                         th:text="${pedido.estado}"></span>
+                                    <div class="mt-2 small text-muted" th:if="${pedido.fechaCompra != null}">
+                                        <i class="bi bi-calendar3"></i> <span
+                                            th:text="${#temporals.format(pedido.fechaCompra, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </div>
                                 </div>
 
                                 <!-- Contenedor del código QR (Se inyecta la librería qrcode.js aquí) -->
                                 <div class="bg-white p-3 rounded shadow-sm d-inline-block mb-3 border">
                                     <!-- Guardamos los datos que va a contener el QR en data-qr-text -->
                                     <div class="qrcode-container"
-                                        th:attr="data-qr-text='Pedido ID: ' + ${pedido.id} + ' | Cliente: ' + ${user.username} + ' | Estado: ' + ${pedido.estado}">
+                                        th:attr="data-qr-text='Pedido ID: ' + ${pedido.id} + ' | Cliente: ' + ${user.username} + ' | Estado: ' + ${pedido.estado} + (${pedido.fechaCompra != null ? ' | Fecha: ' + #temporals.format(pedido.fechaCompra, 'dd/MM/yyyy HH:mm') : ''})">
                                     </div>
                                 </div>
 
                                 <p class="small text-muted mt-2 px-2">Muestra este código en la cafetería para recoger
                                     tu pedido.</p>
 
-                                <!-- Botón que despliega el modal con la lista de platos (factura) -->
-                                <button type="button" class="btn btn-outline-primary w-100 fw-bold mt-2"
-                                    data-bs-toggle="modal" th:attr="data-bs-target='#pedidoModal' + ${pedido.id}">
-                                    <i class="bi bi-list-ul"></i> Ver factura
-                                </button>
+                                <!-- Botón que despliega el modal con la lista de platos (factura) y botón de ocultar -->
+                                <div class="d-flex flex-column gap-2 mt-3">
+                                    <button type="button" class="btn btn-outline-primary w-100 fw-bold"
+                                        data-bs-toggle="modal" th:attr="data-bs-target='#pedidoModal' + ${pedido.id}">
+                                        <i class="bi bi-list-ul"></i> Ver factura
+                                    </button>
+                                    <form th:action="@{/user/pedidos/__${pedido.id}__/delete}" method="POST"
+                                        onsubmit="return confirm('¿Borrar este pedido de tu historial definitivamente?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                            <i class="bi bi-trash"></i> Borrar
+                                        </button>
+                                    </form>
+                                </div>
 
                                 <!-- Modal con la "factura" y detalles del pedido -->
                                 <div class="modal fade" th:id="'pedidoModal' + ${pedido.id}" tabindex="-1"

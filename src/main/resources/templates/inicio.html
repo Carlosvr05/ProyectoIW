@@ -49,51 +49,45 @@
                 </div>
             </div>
 
-            <h2 class="mt-5 mb-4 text-center">Nuestro Equipo</h2>
-            <div class="row row-cols-1 row-cols-md-3 g-4 mb-5 justify-content-center">
+            <h2 class="mt-5 mb-4 text-center">Nuestra Oferta</h2>
 
-                <!-- Miembro del equipo: Pablo -->
-                <div class="col">
-                    <div class="card h-100 text-center shadow-sm align-items-center">
-                        <div class="mt-3 mx-auto profile-img-container rounded-circle overflow-hidden">
-                            <img th:src="@{/img/Barrios-Empresario.png}" class="img-fluid profile-img"
-                                alt="Pablo Barrios">
+            <div id="inicioCarousel" class="carousel slide mb-5 shadow rounded overflow-hidden mx-auto"
+                data-bs-ride="carousel" style="max-width: 800px; background-color: #f8f9fa;">
+                <div class="carousel-inner">
+                    <!-- Iteramos sobre Platos -->
+                    <div th:each="plato, iterStat : ${platos}"
+                        th:class="'carousel-item ' + (${iterStat.index == 0} ? 'active' : '')">
+                        <img th:src="@{/plato/{id}/pic(id=${plato.id})}" class="d-block w-100"
+                            style="height: 500px; object-fit: cover;" alt="Foto de Plato"
+                            onerror="this.src='/img/MenUni.png';">
+                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded px-3 py-2">
+                            <h4 th:text="${plato.nombre}" class="text-white mb-1">Nombre Plato</h4>
+                            <p th:text="${plato.descripcion}" class="mb-0 text-light">Descripción del plato</p>
                         </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Pablo Barrios</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Desarrollador Web</h6>
+                    </div>
+                    <!-- Iteramos sobre Facultades -->
+                    <div th:each="facultad, iterStat : ${facultades}"
+                        th:class="'carousel-item ' + (${#lists.isEmpty(platos) and iterStat.index == 0} ? 'active' : '')">
+                        <img th:src="@{/facultades/{id}/pic(id=${facultad.id})}" class="d-block w-100"
+                            style="height: 500px; object-fit: cover;" alt="Foto de Facultad"
+                            onerror="this.src='/img/MenUni.png';">
+                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded px-3 py-2">
+                            <h4 th:text="${facultad.nombre}" class="text-white mb-1">Nombre Facultad</h4>
+                            <p class="mb-0 text-light">¡Ven a visitarnos a nuestra cafetería!</p>
                         </div>
                     </div>
                 </div>
-
-                <!-- Miembro del equipo: Gabriel -->
-                <div class="col">
-                    <div class="card h-100 text-center shadow-sm align-items-center">
-                        <div class="mt-3 mx-auto profile-img-container rounded-circle overflow-hidden">
-                            <img th:src="@{/img/Gabri-Empresario.png}" class="img-fluid profile-img"
-                                alt="Gabriel Fuertes">
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Gabriel Fuertes</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Desarrollador Web</h6>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Miembro del equipo: Carlos -->
-                <div class="col">
-                    <div class="card h-100 text-center shadow-sm align-items-center">
-                        <div class="mt-3 mx-auto profile-img-container rounded-circle overflow-hidden">
-                            <img th:src="@{/img/Carlos-Empresario.png}" class="img-fluid profile-img"
-                                alt="Carlos Vizcaino">
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Carlos Vizcaino</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Desarrollador Web</h6>
-                        </div>
-                    </div>
-                </div>
-
+                <!-- Controles de navegación -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#inicioCarousel"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Anterior</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#inicioCarousel"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Siguiente</span>
+                </button>
             </div>
         </div>
     </main>

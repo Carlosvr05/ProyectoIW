@@ -27,8 +27,10 @@ public class RootController {
     private EntityManager entityManager;
 
     /**
-     * Añade atributos por defecto al modelo en todas las peticiones a este controlador.
-     * Carga variables de sesión necesarias para las vistas, como el usuario logueado ('u').
+     * Añade atributos por defecto al modelo en todas las peticiones a este
+     * controlador.
+     * Carga variables de sesión necesarias para las vistas, como el usuario
+     * logueado ('u').
      */
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
@@ -39,7 +41,8 @@ public class RootController {
 
     /**
      * Muestra la página de inicio de sesión.
-     * Si la URL contiene el parámetro '?error', activa el flag para mostrar el mensaje de error.
+     * Si la URL contiene el parámetro '?error', activa el flag para mostrar el
+     * mensaje de error.
      */
     @GetMapping("/login")
     public String login(Model model, HttpServletRequest request) {
@@ -49,11 +52,16 @@ public class RootController {
     }
 
     /**
-     * Muestra la página por defecto del sitio (Index).
+     * Muestra la página por defecto del sitio (inicio).
      */
     @GetMapping("/")
     public String index(Model model) {
-        return "index";
+        model.addAttribute("platos", entityManager.createQuery("SELECT p FROM Plato p", es.ucm.fdi.iw.model.Plato.class)
+                .setMaxResults(5).getResultList());
+        model.addAttribute("facultades",
+                entityManager.createQuery("SELECT f FROM Facultad f", es.ucm.fdi.iw.model.Facultad.class)
+                        .setMaxResults(5).getResultList());
+        return "inicio";
     }
 
     /**
@@ -61,6 +69,11 @@ public class RootController {
      */
     @GetMapping("/inicio")
     public String inicio(Model model) {
+        model.addAttribute("platos", entityManager.createQuery("SELECT p FROM Plato p", es.ucm.fdi.iw.model.Plato.class)
+                .setMaxResults(5).getResultList());
+        model.addAttribute("facultades",
+                entityManager.createQuery("SELECT f FROM Facultad f", es.ucm.fdi.iw.model.Facultad.class)
+                        .setMaxResults(5).getResultList());
         return "inicio"; // Renderiza 'inicio.html'
     }
 
@@ -95,14 +108,16 @@ public class RootController {
         Message m = new Message();
         m.setSender(remitente);
         m.setRecipient(admin);
-        // Concatenamos el asunto al texto ya que la entidad Message no tiene campo de asunto
+        // Concatenamos el asunto al texto ya que la entidad Message no tiene campo de
+        // asunto
         m.setText("ASUNTO: " + asunto + " | MENSAJE: " + mensaje);
         m.setDateSent(LocalDateTime.now());
 
         // 4. Guardar el mensaje en la base de datos
         entityManager.persist(m);
 
-        // Redirigir de nuevo a la vista de contacto enviando un parámetro de éxito (?exito=true)
+        // Redirigir de nuevo a la vista de contacto enviando un parámetro de éxito
+        // (?exito=true)
         return "redirect:/contacto?exito=true";
     }
 

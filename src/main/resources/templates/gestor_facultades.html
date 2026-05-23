@@ -134,13 +134,79 @@
 
                             <!-- Borrado de la facultad (Protegido por confirmación en JS) -->
                             <td class="text-center">
-                                <form th:action="@{/facultades/gestor/deleteFacultad/{id}(id=${facultad.id})}"
-                                    method="post"
-                                    onsubmit="return confirm('¿Eliminar esta facultad permanentemente? Esto no borrará los platos del sistema, pero perderán su referencia a este lugar.');">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                                        <i class="bi bi-trash"></i> Borrar
+                                <div class="d-flex flex-column gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                                        th:attr="data-bs-target='#editModal' + ${facultad.id}">
+                                        <i class="bi bi-pencil"></i> Editar
                                     </button>
-                                </form>
+                                    <form th:action="@{/facultades/gestor/deleteFacultad/{id}(id=${facultad.id})}"
+                                        method="post"
+                                        onsubmit="return confirm('¿Eliminar esta facultad permanentemente? Esto no borrará los platos del sistema, pero perderán su referencia a este lugar.');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                            <i class="bi bi-trash"></i> Borrar
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- Modal de edición -->
+                                <div class="modal fade text-start" th:id="'editModal' + ${facultad.id}" tabindex="-1"
+                                    aria-labelledby="editModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary text-white">
+                                                <h5 class="modal-title" id="editModalLabel">Editar Facultad</h5>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form
+                                                    th:action="@{/facultades/gestor/editFacultad/{id}(id=${facultad.id})}"
+                                                    method="post">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Nombre de la Facultad</label>
+                                                        <input type="text" class="form-control" name="nombre"
+                                                            th:value="${facultad.nombre}" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Ubicación</label>
+                                                        <input type="text" class="form-control" name="ubicacion"
+                                                            th:value="${facultad.ubicacion}" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Descripción</label>
+                                                        <textarea class="form-control" name="descripcion" rows="2"
+                                                            th:text="${facultad.descripcion}" required></textarea>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">Horario</label>
+                                                            <input type="text" class="form-control" name="horario"
+                                                                th:value="${facultad.horario}" required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">Aforo Inicial</label>
+                                                            <select class="form-select" name="aforo" required>
+                                                                <option value="Bajo"
+                                                                    th:selected="${facultad.aforo == 'Bajo'}">Bajo
+                                                                </option>
+                                                                <option value="Medio"
+                                                                    th:selected="${facultad.aforo == 'Medio'}">Medio
+                                                                </option>
+                                                                <option value="Alto"
+                                                                    th:selected="${facultad.aforo == 'Alto'}">Alto
+                                                                </option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-grid mt-3">
+                                                        <button type="submit" class="btn btn-primary">Guardar
+                                                            Cambios</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
 

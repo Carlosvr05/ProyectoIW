@@ -269,6 +269,10 @@ public class ApiController {
 
     int puntuacion = payload.get("puntuacion");
 
+    if (puntuacion < 1 || puntuacion > 5) {
+      return java.util.Map.of("error", "Puntuación inválida. Debe estar entre 1 y 5.");
+    }
+
     // Comprobar si ya votó previamente (evitar votos duplicados del mismo usuario)
     java.util.List<es.ucm.fdi.iw.model.Valoracion> existentes = entityManager.createQuery(
         "SELECT v FROM Valoracion v WHERE v.plato.id = :pid AND v.facultad.id = :fid AND v.user.id = :uid",

@@ -4,6 +4,7 @@ import es.ucm.fdi.iw.LocalData;
 import es.ucm.fdi.iw.model.Message;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
+import es.ucm.fdi.iw.model.Pedido;
 import es.ucm.fdi.iw.model.User.Role;
 
 import org.apache.logging.log4j.LogManager;
@@ -127,11 +128,17 @@ public class UserController {
     User target = entityManager.find(User.class, id);
     model.addAttribute("user", target);
 
-    // Obtener el historial completo de pedidos de este usuario
-    List<?> pedidos = entityManager.createQuery("SELECT p FROM Pedido p WHERE p.cliente.id = :uid")
-        .setParameter("uid", target.getId())
-        .getResultList();
-    model.addAttribute("pedidos", pedidos);
+    // Obtener el historial completo de pedidos de este usuario (solo si es su
+    // perfil o es admin)
+    User requester = (User) session.getAttribute("u");
+    if (requester != null && (requester.getId() == target.getId() || requester.hasRole(Role.ADMIN))) {
+      List<?> pedidos = entityManager
+          .createQuery(
+              "SELECT p FROM Pedido p WHERE p.cliente.id = :uid AND (p.visible IS NULL OR p.visible = true) ORDER BY p.fechaCompra DESC")
+          .setParameter("uid", target.getId())
+          .getResultList();
+      model.addAttribute("pedidos", pedidos);
+    }
 
     return "user"; // Renderiza user.html
   }
@@ -343,5 +350,41 @@ public class UserController {
     // 3. Empuja la notificación en tiempo real a la cola websocket de ese usuario
     messagingTemplate.convertAndSend("/user/" + u.getUsername() + "/queue/updates", json);
     return "{\"result\": \"message sent.\"}";
+  }
+
+  /**
+   * Borra un pedido del historial del usuario.
+   */
+  @PostMapping("/pedidos/{pedidoId}/delete")
+  @Transactional
+  public String deletePedido(@PathVariable long pedidoId, HttpSession session) {
+    User requester = (User) session.getAttribute("u");
+    Pedido p = entityManager.find(Pedido.class, pedidoId);
+    if (p != null && requester != null
+        && (p.getCliente().getId() == requester.getId() || requester.hasRole(Role.ADMIN))) {
+      // Borrar las líneas del pedido primero por la restricción de clave foránea
+      for (es.ucm.fdi.iw.model.LineaPedido lp : p.getLineas()) {
+        entityManager.remove(lp);
+      }
+      // Borrar el pedido
+      entityManager.remove(p);
+    }
+    return "redirect:/user/" + (p != null ? p.getCliente().getId() : requester.getId()) + "#pedidos";
+  }
+
+  /**
+   * Añade 1000€ al saldo del usuario (solo para usuarios normales).
+   */
+  @PostMapping("/add-money")
+  @Transactional
+  public String addMoney(HttpSession session, jakarta.servlet.http.HttpServletRequest request) {
+    User u = (User) session.getAttribute("u");
+    if (u != null) {
+      User dbUser = entityManager.find(User.class, u.getId());
+      dbUser.setMoney(dbUser.getMoney() + 1000.0);
+      session.setAttribute("u", dbUser);
+    }
+    String referer = request.getHeader("Referer");
+    return "redirect:" + (referer != null ? referer : "/");
   }
 }

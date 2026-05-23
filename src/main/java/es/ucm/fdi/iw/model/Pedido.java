@@ -1,14 +1,17 @@
 package es.ucm.fdi.iw.model;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
 import java.util.ArrayList;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Data
 @NoArgsConstructor
-public class Pedido{
+public class Pedido {
 
     public enum Estado {
         SOLICITADO,
@@ -32,6 +35,10 @@ public class Pedido{
 
     @Enumerated(EnumType.STRING)
     private Estado estado;
+
+    private LocalDateTime fechaCompra = LocalDateTime.now();
+
+    private Boolean visible = true;
 
     public double getTotal() {
         return lineas.stream()
