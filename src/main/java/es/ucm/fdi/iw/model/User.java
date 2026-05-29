@@ -77,6 +77,10 @@ public class User implements Transferable<User.Transfer> {
   @ManyToMany(mappedBy = "members")
   private List<Topic> groups = new ArrayList<>();
 
+  @ManyToOne
+  @JoinColumn(name = "facultad_gestionada_id")
+  private Facultad facultadGestionada;
+
   /**
    * Comprueba si el usuario tiene un rol específico.
    * 

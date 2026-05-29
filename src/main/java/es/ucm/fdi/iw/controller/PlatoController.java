@@ -170,11 +170,37 @@ public class PlatoController {
      * borrarlos...).
      */
     @GetMapping("/gestor")
-    public String managePlatos(Model model) {
-        log.info("Admin accede a la gestión de platos");
-        List<Plato> platos = entityManager.createQuery("select p from Plato p", Plato.class).getResultList();
-        List<Facultad> facultades = entityManager.createQuery("select f from Facultad f", Facultad.class)
-                .getResultList();
+    public String managePlatos(Model model, HttpSession session) {
+        log.info("Acceso a la gestión de platos");
+        User requester = (User) session.getAttribute("u");
+        if (requester == null) {
+            return "redirect:/login";
+        }
+
+        List<Plato> platos;
+        List<Facultad> facultades;
+
+        // Cargar datos frescos de la BD
+        User dbUser = entityManager.find(User.class, requester.getId());
+
+        if (dbUser.hasRole(User.Role.ADMIN)) {
+            platos = entityManager.createQuery("select p from Plato p", Plato.class).getResultList();
+            facultades = entityManager.createQuery("select f from Facultad f", Facultad.class).getResultList();
+        } else if (dbUser.hasRole(User.Role.GESTOR_CAFETERIA)) {
+            Facultad fg = dbUser.getFacultadGestionada();
+            if (fg != null) {
+                platos = entityManager.createQuery(
+                        "select p from Plato p join p.facultades f where f.id = :fid", Plato.class)
+                        .setParameter("fid", fg.getId())
+                        .getResultList();
+                facultades = List.of(fg);
+            } else {
+                platos = List.of();
+                facultades = List.of();
+            }
+        } else {
+            return "redirect:/";
+        }
 
         model.addAttribute("platos", platos);
         model.addAttribute("facultades", facultades);
@@ -189,7 +215,14 @@ public class PlatoController {
     @Transactional
     public String addPlato(@RequestParam String nombre, @RequestParam String descripcion,
             @RequestParam double precio, @RequestParam("photo") MultipartFile photo,
-            @RequestParam(required = false) List<Long> facultadIds) {
+            @RequestParam(required = false) List<Long> facultadIds, HttpSession session) {
+
+        User requester = (User) session.getAttribute("u");
+        if (requester == null) {
+            return "redirect:/login";
+        }
+
+        User dbUser = entityManager.find(User.class, requester.getId());
 
         // 1. Configurar la entidad
         Plato p = new Plato();
@@ -198,16 +231,23 @@ public class PlatoController {
         p.setPrecio(precio);
         p.setActivo(true);
 
-        // Relacionar este plato con las facultades enviadas desde los checkboxes
-        if (facultadIds != null && !facultadIds.isEmpty()) {
-            Set<Facultad> facultadesAsignadas = new HashSet<>();
-            for (Long id : facultadIds) {
-                Facultad f = entityManager.find(Facultad.class, id);
-                if (f != null)
-                    facultadesAsignadas.add(f);
+        Set<Facultad> facultadesAsignadas = new HashSet<>();
+        if (dbUser.hasRole(User.Role.ADMIN)) {
+            // Relacionar este plato con las facultades enviadas desde los checkboxes
+            if (facultadIds != null && !facultadIds.isEmpty()) {
+                for (Long id : facultadIds) {
+                    Facultad f = entityManager.find(Facultad.class, id);
+                    if (f != null)
+                        facultadesAsignadas.add(f);
+                }
             }
-            p.setFacultades(facultadesAsignadas);
+        } else if (dbUser.hasRole(User.Role.GESTOR_CAFETERIA)) {
+            Facultad fg = dbUser.getFacultadGestionada();
+            if (fg != null) {
+                facultadesAsignadas.add(fg);
+            }
         }
+        p.setFacultades(facultadesAsignadas);
 
         entityManager.persist(p);
         entityManager.flush(); // Para obtener el ID autogenerado
@@ -232,20 +272,38 @@ public class PlatoController {
     @PostMapping("/gestor/editPlato/{id}")
     @Transactional
     public String editPlato(@PathVariable long id, @RequestParam String nombre, @RequestParam String descripcion,
-            @RequestParam double precio, @RequestParam(required = false) List<Long> facultadIds) {
+            @RequestParam double precio, @RequestParam(required = false) List<Long> facultadIds, HttpSession session) {
 
+        User requester = (User) session.getAttribute("u");
+        if (requester == null) {
+            return "redirect:/login";
+        }
+
+        User dbUser = entityManager.find(User.class, requester.getId());
         Plato p = entityManager.find(Plato.class, id);
+
         if (p != null) {
+            // Restricción de seguridad para el gestor de cafetería
+            if (dbUser.hasRole(User.Role.GESTOR_CAFETERIA)) {
+                Facultad fg = dbUser.getFacultadGestionada();
+                if (fg == null || !p.getFacultades().contains(fg)) {
+                    throw new UserController.NoEsTuPerfilException(); // Devuelve 403 Forbidden
+                }
+            }
+
             p.setNombre(nombre);
             p.setDescripcion(descripcion);
             p.setPrecio(precio);
 
-            p.getFacultades().clear();
-            if (facultadIds != null && !facultadIds.isEmpty()) {
-                for (Long facId : facultadIds) {
-                    Facultad f = entityManager.find(Facultad.class, facId);
-                    if (f != null)
-                        p.getFacultades().add(f);
+            // Solo el administrador puede re-asignar las facultades de los platos
+            if (dbUser.hasRole(User.Role.ADMIN)) {
+                p.getFacultades().clear();
+                if (facultadIds != null && !facultadIds.isEmpty()) {
+                    for (Long facId : facultadIds) {
+                        Facultad f = entityManager.find(Facultad.class, facId);
+                        if (f != null)
+                            p.getFacultades().add(f);
+                    }
                 }
             }
         }
@@ -257,9 +315,24 @@ public class PlatoController {
      */
     @PostMapping("/gestor/deletePlato/{id}")
     @Transactional
-    public String deletePlato(@PathVariable long id) {
+    public String deletePlato(@PathVariable long id, HttpSession session) {
+        User requester = (User) session.getAttribute("u");
+        if (requester == null) {
+            return "redirect:/login";
+        }
+
+        User dbUser = entityManager.find(User.class, requester.getId());
         Plato p = entityManager.find(Plato.class, id);
+
         if (p != null) {
+            // Restricción de seguridad para el gestor de cafetería
+            if (dbUser.hasRole(User.Role.GESTOR_CAFETERIA)) {
+                Facultad fg = dbUser.getFacultadGestionada();
+                if (fg == null || !p.getFacultades().contains(fg)) {
+                    throw new UserController.NoEsTuPerfilException(); // Devuelve 403 Forbidden
+                }
+            }
+
             // Desasociar antes de eliminar para mantener integridad referencial
             p.getFacultades().clear();
             entityManager.remove(p);

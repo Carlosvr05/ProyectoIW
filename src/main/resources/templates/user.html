@@ -150,9 +150,9 @@
 
                                 <!-- Contenedor del código QR (Se inyecta la librería qrcode.js aquí) -->
                                 <div class="bg-white p-3 rounded shadow-sm d-inline-block mb-3 border">
-                                    <!-- Guardamos la URL al ticket que va a contener el QR en data-qr-text -->
+                                    <!-- Guardamos la ruta al ticket que va a contener el QR en data-qr-path -->
                                     <div class="qrcode-container"
-                                        th:attr="data-qr-text='http://localhost:8080/user/pedidos/' + ${pedido.id} + '/ticket'">
+                                        th:attr="data-qr-path='/user/pedidos/' + ${pedido.id} + '/ticket'">
                                     </div>
                                 </div>
 
@@ -256,7 +256,8 @@
              */
             var qrContainers = document.querySelectorAll(".qrcode-container");
             qrContainers.forEach(function (container) {
-                var text = container.getAttribute("data-qr-text");
+                var path = container.getAttribute("data-qr-path");
+                var text = window.location.origin + path;
                 new QRCode(container, {
                     text: text,
                     width: 150,

@@ -1,20 +1,7 @@
--- insert admin (username a, password aa)
-INSERT INTO IWUser (id, enabled, roles, username, password)
-VALUES (1, TRUE, 'ADMIN,USER', 'a',
-    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
-INSERT INTO IWUser (id, enabled, roles, username,money, password)
-VALUES (2, TRUE, 'USER', 'b', 1000,
-    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
-
--- insert gestor de cafeteria (username c, password aa)
-INSERT INTO IWUser (id, enabled, roles, username, password)
-VALUES (3, TRUE, 'USER,GESTOR_CAFETERIA', 'c',
-    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
-
--- start id numbering from a value that is larger than any assigned above
+-- start id numbering from a value that is larger than any assigned below
 ALTER SEQUENCE "PUBLIC"."GEN" RESTART WITH 1024;
 
---Poblamos la base de datos
+-- Poblamos la base de datos
 -- Insertar Facultades
 INSERT INTO Facultad (id, nombre, ubicacion, descripcion, horario, aforo) 
 VALUES (1, 'Facultad de Informática', 'Calle del Prof. José García Santesmases, 9', 'Menús variados, opciones veganas y amplia zona de mesas.', '08:30 - 19:30', 'Bajo');
@@ -34,10 +21,26 @@ VALUES (5, 'Facultad de Biología', 'Calle José Antonio Novais, 12', 'Ambiente 
 INSERT INTO Facultad (id, nombre, ubicacion, descripcion, horario, aforo) 
 VALUES (6, 'Facultad de Filosofía', 'Plaza de Menéndez Pelayo, s/n', 'La mejor selección de café y bollería artesana.', '08:30 - 20:30', 'Bajo');
 
+-- Insertar Usuarios (se realiza después de las facultades para poder asociar facultad_gestionada_id a usuarios gestores)
+-- insert admin (username a, password aa)
+INSERT INTO IWUser (id, enabled, roles, username, password)
+VALUES (1, TRUE, 'ADMIN,USER', 'a',
+    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
+
+-- insert normal user (username b, password aa)
+INSERT INTO IWUser (id, enabled, roles, username, money, password)
+VALUES (2, TRUE, 'USER', 'b', 1000,
+    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
+
+-- insert gestor de cafeteria (username c, password aa, asignado a Facultad 1)
+INSERT INTO IWUser (id, enabled, roles, username, password, facultad_gestionada_id)
+VALUES (3, TRUE, 'USER,GESTOR_CAFETERIA', 'c',
+    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W', 1);
 
 -- Insertar Platos
 INSERT INTO Plato (id, nombre, descripcion, activo, precio) 
 VALUES (100, 'Hamburguesa', 'Hamburguesa con queso', TRUE, 5.50);
+
 INSERT INTO Plato (id, nombre, descripcion, activo, precio) 
 VALUES (101, 'Ensalada Cesar', 'Ensalada fresca', TRUE, 4.20);
 
@@ -60,7 +63,6 @@ INSERT INTO plato_facultades (plato_id, facultad_id) VALUES (104, 6);
 INSERT INTO plato_facultades (plato_id, facultad_id) VALUES (103, 5);
 
 -- Votos de los platos
-
 INSERT INTO valoracion (id, puntuacion, plato_id, facultad_id, user_id) VALUES (200, 5, 100, 1, 1);
 INSERT INTO valoracion (id, puntuacion, plato_id, facultad_id, user_id) VALUES (201, 4, 100, 1, 2);
 INSERT INTO valoracion (id, puntuacion, plato_id, facultad_id, user_id) VALUES (202, 5, 100, 1, 3);

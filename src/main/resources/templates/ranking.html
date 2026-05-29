@@ -125,21 +125,21 @@
             // Activamos la interacción táctil/ratón de las estrellas
             setupStarSliders();
 
-            // Suscribirse de forma segura al canal de valoraciones una vez establecida la conexión WebSocket
-            function intentarSuscripcion() {
-                if (typeof ws !== 'undefined' && ws.stompClient && ws.connected) {
-                    ws.stompClient.subscribe('/topic/valoraciones', function(msg) {
+            // Sobrescribimos el gestor de recepción de WebSockets para actualizar en tiempo real
+            if (typeof ws !== 'undefined') {
+                const originalReceive = ws.receive;
+                ws.receive = (text) => {
+                    if (originalReceive) originalReceive(text);
+                    
+                    // Si el WebSocket notifica una actualización de valoraciones
+                    if (text && text.status === 'updated') {
                         console.log("Nueva valoración recibida vía WebSocket, recargando página...");
                         setTimeout(() => {
                             location.reload();
                         }, 150);
-                    });
-                } else {
-                    // Reintentar en 100ms si el WebSocket aún no ha conectado
-                    setTimeout(intentarSuscripcion, 100);
-                }
+                    }
+                };
             }
-            intentarSuscripcion();
         });
 
         /**
