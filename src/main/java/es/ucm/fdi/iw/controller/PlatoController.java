@@ -29,6 +29,9 @@ import es.ucm.fdi.iw.LocalData;
 import es.ucm.fdi.iw.model.Facultad;
 import es.ucm.fdi.iw.model.Plato;
 import es.ucm.fdi.iw.model.User;
+import es.ucm.fdi.iw.model.Pedido;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.ResponseBody;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
@@ -262,5 +265,63 @@ public class PlatoController {
             entityManager.remove(p);
         }
         return "redirect:/plato/gestor";
+    }
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    /**
+     * MONITOR DE COCINA: Muestra los pedidos entrantes para los gestores de cafetería.
+     */
+    @GetMapping("/cocina")
+    public String monitorCocina(Model model, HttpSession session) {
+        User requester = (User) session.getAttribute("u");
+        // Filtro estricto de seguridad: Solo gestores de cafetería o admins
+        if (requester == null || (!requester.hasRole(User.Role.ADMIN) && !requester.hasRole(User.Role.GESTOR_CAFETERIA))) {
+            return "redirect:/login";
+        }
+
+        // Recuperar los pedidos en preparación o solicitados ordenados cronológicamente
+        List<Pedido> pedidos = entityManager.createQuery(
+                "SELECT p FROM Pedido p WHERE p.estado IN (:estados) ORDER BY p.fechaCompra ASC", Pedido.class)
+                .setParameter("estados", List.of(Pedido.Estado.SOLICITADO, Pedido.Estado.PREPARANDO))
+                .getResultList();
+
+        model.addAttribute("pedidos", pedidos);
+        return "cocina"; // Renderiza cocina.html
+    }
+
+    /**
+     * AJAX/REST: Avanza el estado del pedido en cocina y notifica al usuario por WebSocket.
+     */
+    @PostMapping("/cocina/completar/{id}")
+    @Transactional
+    @ResponseBody
+    public String avanzarEstado(@PathVariable long id, HttpSession session, jakarta.servlet.http.HttpServletResponse response) throws IOException {
+        User requester = (User) session.getAttribute("u");
+        if (requester == null || (!requester.hasRole(User.Role.ADMIN) && !requester.hasRole(User.Role.GESTOR_CAFETERIA))) {
+            response.sendError(403, "No autorizado");
+            return null;
+        }
+
+        Pedido p = entityManager.find(Pedido.class, id);
+        if (p == null) {
+            return "{\"status\":\"error\",\"message\":\"Pedido no encontrado\"}";
+        }
+        // Avanzar la máquina de estados del pedido
+        if (p.getEstado() == Pedido.Estado.SOLICITADO) {
+            p.setEstado(Pedido.Estado.PREPARANDO);
+        } else if (p.getEstado() == Pedido.Estado.PREPARANDO) {
+            p.setEstado(Pedido.Estado.LISTO_PARA_RECOGER);
+
+            // Si está listo, le enviamos un aviso WebSocket inmediato al cliente del pedido
+            String notificacionUsuario = "{"
+                    + "\"type\": \"PEDIDO_LISTO\","
+                    + "\"pedidoId\": " + p.getId()
+                    + "}";
+            messagingTemplate.convertAndSend("/user/" + p.getCliente().getUsername() + "/queue/updates", notificacionUsuario);
+        }
+
+        return "{\"status\":\"ok\",\"nuevoEstado\":\"" + p.getEstado().name() + "\"}";
     }
 }

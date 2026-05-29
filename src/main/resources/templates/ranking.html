@@ -124,6 +124,22 @@
             });
             // Activamos la interacción táctil/ratón de las estrellas
             setupStarSliders();
+
+            // Suscribirse de forma segura al canal de valoraciones una vez establecida la conexión WebSocket
+            function intentarSuscripcion() {
+                if (typeof ws !== 'undefined' && ws.stompClient && ws.connected) {
+                    ws.stompClient.subscribe('/topic/valoraciones', function(msg) {
+                        console.log("Nueva valoración recibida vía WebSocket, recargando página...");
+                        setTimeout(() => {
+                            location.reload();
+                        }, 150);
+                    });
+                } else {
+                    // Reintentar en 100ms si el WebSocket aún no ha conectado
+                    setTimeout(intentarSuscripcion, 100);
+                }
+            }
+            intentarSuscripcion();
         });
 
         /**

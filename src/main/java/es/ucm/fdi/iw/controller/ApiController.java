@@ -253,7 +253,7 @@ public class ApiController {
   }
 
   /**
-   * Registra un nuevo voto (estrellas) de un usuario para un plato específico
+   * Registra o actualiza un voto (estrellas) de un usuario para un plato específico
    * que se vende en una facultad específica.
    */
   @PostMapping("/plato/{platoId}/facultad/{facultadId}/vote")
@@ -269,11 +269,12 @@ public class ApiController {
 
     int puntuacion = payload.get("puntuacion");
 
+    // Validación del rango de estrellas (1 a 5)
     if (puntuacion < 1 || puntuacion > 5) {
       return java.util.Map.of("error", "Puntuación inválida. Debe estar entre 1 y 5.");
     }
 
-    // Comprobar si ya votó previamente (evitar votos duplicados del mismo usuario)
+    // Comprobar si ya votó previamente para el plato en esa facultad
     java.util.List<es.ucm.fdi.iw.model.Valoracion> existentes = entityManager.createQuery(
         "SELECT v FROM Valoracion v WHERE v.plato.id = :pid AND v.facultad.id = :fid AND v.user.id = :uid",
         es.ucm.fdi.iw.model.Valoracion.class)
@@ -283,10 +284,18 @@ public class ApiController {
         .getResultList();
 
     if (!existentes.isEmpty()) {
-      return java.util.Map.of("error", "Ya has votado"); // Rechazado
+      // SI YA VOTÓ: Actualizamos su puntuación existente permitiendo "cambiar de opinión"
+      es.ucm.fdi.iw.model.Valoracion valExistente = existentes.get(0);
+      valExistente.setPuntuacion(puntuacion);
+      entityManager.merge(valExistente);
+
+      // Notificar post-commit de la transacción
+      notificarValoracion();
+
+      return java.util.Map.of("success", true, "updated", true);
     }
 
-    // Si no ha votado, persistimos su nueva valoración
+    // SI NO HA VOTADO: Creamos una nueva valoración y la persistimos
     es.ucm.fdi.iw.model.Valoracion nuevaVal = new es.ucm.fdi.iw.model.Valoracion();
     nuevaVal.setUser(entityManager.find(User.class, u.getId()));
     nuevaVal.setPlato(entityManager.find(es.ucm.fdi.iw.model.Plato.class, platoId));
@@ -295,6 +304,25 @@ public class ApiController {
 
     entityManager.persist(nuevaVal);
 
+    // Notificar post-commit de la transacción
+    notificarValoracion();
+
     return java.util.Map.of("success", true);
+  }
+
+  private void notificarValoracion() {
+    new Thread(() -> {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+      try {
+        log.info("Sending delayed WebSocket rating notification...");
+        messagingTemplate.convertAndSend("/topic/valoraciones", "{\"status\":\"updated\"}");
+      } catch (Exception e) {
+        log.error("Error sending delayed WebSocket notification", e);
+      }
+    }).start();
   }
 }

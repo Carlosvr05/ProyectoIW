@@ -23,5 +23,7 @@ public class Valoracion {
     @ManyToOne
     private Facultad facultad;
 
+    @jakarta.validation.constraints.Min(1)
+    @jakarta.validation.constraints.Max(5)
     private int puntuacion;
 }

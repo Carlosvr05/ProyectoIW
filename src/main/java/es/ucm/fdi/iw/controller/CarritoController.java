@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 /**
  * Controlador que gestiona la lógica del Carrito de la Compra virtual.
@@ -33,6 +34,9 @@ public class CarritoController {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     private static final Logger log = LogManager.getLogger(CarritoController.class);
 
@@ -101,6 +105,38 @@ public class CarritoController {
                     entityManager.persist(nuevaLinea);
                     pedido.getLineas().add(nuevaLinea);
                 }
+
+                // Sincronizar cambios para obtener el ID real generado
+                entityManager.flush();
+
+                // Construimos la estructura JSON de la comanda para el panel de cocina
+                StringBuilder platosJson = new StringBuilder("[");
+                for (int i = 0; i < pedido.getLineas().size(); i++) {
+                    LineaPedido lp = pedido.getLineas().get(i);
+                    platosJson.append("{")
+                            .append("\"platoNombre\":\"").append(lp.getPlato().getNombre()).append("\",")
+                            .append("\"cantidad\":").append(lp.getCantidad())
+                            .append("}");
+                    if (i < pedido.getLineas().size() - 1) {
+                        platosJson.append(",");
+                    }
+                }
+                platosJson.append("]");
+
+                String horaCompra = pedido.getFechaCompra() != null 
+                        ? pedido.getFechaCompra().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                        : java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+
+                String jsonCocina = "{"
+                        + "\"id\": " + pedido.getId() + ","
+                        + "\"estado\": \"" + pedido.getEstado().name() + "\","
+                        + "\"cliente\": \"" + dbUser.getUsername() + "\","
+                        + "\"hora\": \"" + horaCompra + "\","
+                        + "\"items\": " + platosJson.toString()
+                        + "}";
+
+                // Notificar masivamente al monitor de cocina asíncronamente por WebSocket!
+                messagingTemplate.convertAndSend("/topic/pedidos-cocina", jsonCocina);
             }
 
             // 5. El carrito se vacía tras finalizar los pedidos

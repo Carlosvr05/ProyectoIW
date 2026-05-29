@@ -150,20 +150,19 @@
 
                                 <!-- Contenedor del código QR (Se inyecta la librería qrcode.js aquí) -->
                                 <div class="bg-white p-3 rounded shadow-sm d-inline-block mb-3 border">
-                                    <!-- Guardamos los datos que va a contener el QR en data-qr-text -->
+                                    <!-- Guardamos la URL al ticket que va a contener el QR en data-qr-text -->
                                     <div class="qrcode-container"
-                                        th:attr="data-qr-text='Pedido ID: ' + ${pedido.id} + ' | Cliente: ' + ${user.username} + ' | Estado: ' + ${pedido.estado} + (${pedido.fechaCompra != null ? ' | Fecha: ' + #temporals.format(pedido.fechaCompra, 'dd/MM/yyyy HH:mm') : ''})">
+                                        th:attr="data-qr-text='http://localhost:8080/user/pedidos/' + ${pedido.id} + '/ticket'">
                                     </div>
                                 </div>
 
-                                <p class="small text-muted mt-2 px-2">Muestra este código en la cafetería para recoger
-                                    tu pedido.</p>
+                                <p class="small text-muted mt-2 px-2">Muestra este código en la cafetería para recoger tu pedido.</p>
 
-                                <!-- Botón que despliega el modal con la lista de platos (factura) y botón de ocultar -->
+                                <!-- Botón que despliega el modal con la lista de platos (ticket) y botón de ocultar -->
                                 <div class="d-flex flex-column gap-2 mt-3">
                                     <button type="button" class="btn btn-outline-primary w-100 fw-bold"
                                         data-bs-toggle="modal" th:attr="data-bs-target='#pedidoModal' + ${pedido.id}">
-                                        <i class="bi bi-list-ul"></i> Ver factura
+                                        <i class="bi bi-list-ul"></i> Ver ticket
                                     </button>
                                     <form th:action="@{/user/pedidos/__${pedido.id}__/delete}" method="POST"
                                         onsubmit="return confirm('¿Borrar este pedido de tu historial definitivamente?');">
@@ -173,7 +172,7 @@
                                     </form>
                                 </div>
 
-                                <!-- Modal con la "factura" y detalles del pedido -->
+                                <!-- Modal con el "ticket" y detalles del pedido -->
                                 <div class="modal fade" th:id="'pedidoModal' + ${pedido.id}" tabindex="-1"
                                     aria-labelledby="pedidoModalLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
@@ -182,7 +181,7 @@
                                             <!-- Cabecera del modal -->
                                             <div class="modal-header bg-primary text-white">
                                                 <h5 class="modal-title" th:id="'pedidoModalLabel' + ${pedido.id}">
-                                                    <i class="bi bi-receipt"></i> Factura Pedido #<span
+                                                    <i class="bi bi-receipt"></i> Ticket Pedido #<span
                                                         th:text="${pedido.id}"></span>
                                                 </h5>
                                                 <button type="button" class="btn-close btn-close-white"

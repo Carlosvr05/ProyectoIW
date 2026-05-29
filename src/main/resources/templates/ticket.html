@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>MenUni - Ticket de Pedido</title>
+    <!-- Cargamos Bootstrap 5 y estilos -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <style>
+        .ticket-box {
+            max-width: 480px;
+            border: 2px dashed #bbb;
+            background-color: #fff;
+        }
+        .stamp {
+            border: 3px double;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+            padding: 5px 10px;
+            transform: rotate(-5deg);
+        }
+        .stamp-solicitado { border-color: #ffc107; color: #ffc107; }
+        .stamp-preparando { border-color: #0dcaf0; color: #0dcaf0; }
+        .stamp-listo { border-color: #198754; color: #198754; }
+        .stamp-entregado { border-color: #6c757d; color: #6c757d; }
+    </style>
+</head>
+<body class="bg-light py-5">
+<div class="container d-flex justify-content-center">
+    <div class="ticket-box p-4 rounded shadow-sm w-100">
+        
+        <!-- Cabecera del Ticket -->
+        <div class="text-center border-bottom pb-3 mb-3">
+            <h2 class="text-primary fw-bold mb-0">MenUni</h2>
+            <p class="text-muted small mb-1">Servicio de Comedor Universitario</p>
+            <p class="fw-bold fs-5 mb-0">TICKET DE RECOGIDA</p>
+        </div>
+
+        <!-- Información del Pedido -->
+        <div class="row mb-3">
+            <div class="col-6">
+                <span class="text-muted d-block small">Nº PEDIDO</span>
+                <strong class="fs-4 text-dark">#<span th:text="${pedido.id}">0000</span></strong>
+            </div>
+            <div class="col-6 text-end">
+                <span class="text-muted d-block small">ESTADO</span>
+                <!-- Estampilla de estado -->
+                <div class="stamp mt-1" 
+                     th:classappend="${pedido.estado.name() == 'SOLICITADO' ? 'stamp-solicitado' : 
+                                     (pedido.estado.name() == 'PREPARANDO' ? 'stamp-preparando' : 
+                                     (pedido.estado.name() == 'LISTO' ? 'stamp-listo' : 'stamp-entregado'))}"
+                     th:text="${pedido.estado}">
+                    SOLICITADO
+                </div>
+            </div>
+        </div>
+
+        <div class="border-top pt-2 mb-3">
+            <div class="row">
+                <div class="col-6">
+                    <span class="text-muted d-block small">CLIENTE</span>
+                    <strong th:text="${pedido.cliente.username}">b</strong>
+                </div>
+                <div class="col-6 text-end" th:if="${pedido.fechaCompra != null}">
+                    <span class="text-muted d-block small">FECHA COMPRA</span>
+                    <span th:text="${#temporals.format(pedido.fechaCompra, 'dd/MM/yyyy HH:mm')}">12/12/2026 14:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listado de platos (Desglose de compra) -->
+        <div class="border-top pt-3">
+            <h6 class="fw-bold mb-2">Platos incluidos:</h6>
+            <div class="list-group list-group-flush mb-3">
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0 border-bottom border-light" 
+                     th:each="linea : ${pedido.lineas}">
+                    <div>
+                        <strong class="text-dark" th:text="${linea.plato.nombre}">Plato</strong>
+                        <small class="text-muted d-block" th:if="${linea.facultad != null}">
+                            <i class="bi bi-shop"></i> <span th:text="${linea.facultad.nombre}">Facultad</span>
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-light text-dark border rounded-pill">
+                            <span th:text="${linea.cantidad}">1</span> x <span th:text="${#numbers.formatDecimal(linea.precioUnitario, 1, 2)}">0.00</span>€
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total -->
+        <div class="border-top pt-3 d-flex justify-content-between align-items-center bg-light p-3 rounded">
+            <span class="fs-5 fw-bold text-dark">TOTAL PAGADO:</span>
+            <span class="fs-3 fw-bold text-primary"><span th:text="${#numbers.formatDecimal(pedido.total, 1, 2)}">0.00</span>€</span>
+        </div>
+
+        <!-- Pie del Ticket -->
+        <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-10">
+            <p class="small text-muted mb-0">Presenta este resguardo oficial en tu facultad para recoger la comida.</p>
+            <p class="small text-muted font-monospace mt-2 mb-0">MenUni Security Verified</p>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
