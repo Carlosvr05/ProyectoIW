@@ -139,7 +139,19 @@ public class FacultadContoller {
     @Transactional
     public String addFacultad(@RequestParam String nombre, @RequestParam String ubicacion,
             @RequestParam String descripcion, @RequestParam String horario,
-            @RequestParam String aforo, @RequestParam("photo") MultipartFile photo) {
+            @RequestParam String aforo, @RequestParam("photo") MultipartFile photo,
+            @RequestParam(required = false) String gestorUsername) {
+
+        User gestor = null;
+        if (gestorUsername != null && !gestorUsername.trim().isEmpty()) {
+            try {
+                gestor = entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
+                        .setParameter("username", gestorUsername)
+                        .getSingleResult();
+            } catch (jakarta.persistence.NoResultException e) {
+                return "redirect:/facultades/gestor?errorUser=" + gestorUsername;
+            }
+        }
 
         // 1. Crear el objeto con los datos del formulario
         Facultad f = new Facultad();
@@ -148,11 +160,17 @@ public class FacultadContoller {
         f.setDescripcion(descripcion);
         f.setHorario(horario);
         f.setAforo(aforo);
+        f.setGestor(gestor);
 
         // 2. Persistir en la BD
         entityManager.persist(f);
         entityManager.flush(); // Fuerza la escritura para que la BD le asigne un ID (necesario para el nombre
                                // de la foto)
+
+        if (gestor != null) {
+            gestor.setFacultadGestionada(f);
+            entityManager.merge(gestor);
+        }
 
         // 3. Procesar y guardar el archivo de foto físicamente
         if (!photo.isEmpty()) {
@@ -197,15 +215,42 @@ public class FacultadContoller {
     @Transactional
     public String editFacultad(@PathVariable long id, @RequestParam String nombre, @RequestParam String ubicacion,
             @RequestParam String descripcion, @RequestParam String horario,
-            @RequestParam String aforo) {
+            @RequestParam String aforo, @RequestParam(required = false) String gestorUsername) {
 
         Facultad f = entityManager.find(Facultad.class, id);
         if (f != null) {
+            User gestor = null;
+            if (gestorUsername != null && !gestorUsername.trim().isEmpty()) {
+                try {
+                    gestor = entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
+                            .setParameter("username", gestorUsername)
+                            .getSingleResult();
+                } catch (jakarta.persistence.NoResultException e) {
+                    return "redirect:/facultades/gestor?errorUser=" + gestorUsername;
+                }
+            }
+
+            // Desvincular el gestor anterior si ha cambiado
+            User oldGestor = f.getGestor();
+            if (oldGestor != null && (gestor == null || oldGestor.getId() != gestor.getId())) {
+                oldGestor.setFacultadGestionada(null);
+                entityManager.merge(oldGestor);
+            }
+
             f.setNombre(nombre);
             f.setUbicacion(ubicacion);
             f.setDescripcion(descripcion);
             f.setHorario(horario);
             f.setAforo(aforo);
+            f.setGestor(gestor);
+
+            entityManager.merge(f);
+
+            if (gestor != null) {
+                gestor.setFacultadGestionada(f);
+                entityManager.merge(gestor);
+            }
+
             log.info("Facultad {} editada", id);
         }
         return "redirect:/facultades/gestor";

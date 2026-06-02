@@ -388,31 +388,5 @@ public class UserController {
     return "redirect:" + (referer != null ? referer : "/");
   }
 
-  /**
-   * Muestra la vista del ticket digital del pedido.
-   * Accesible para el dueño del pedido, ADMIN o GESTOR_CAFETERIA.
-   */
-  @GetMapping("/pedidos/{id}/ticket")
-  public String verTicket(@PathVariable long id, HttpSession session, Model model) {
-    User requester = (User) session.getAttribute("u");
-    if (requester == null) {
-      return "redirect:/login";
-    }
-
-    Pedido p = entityManager.find(Pedido.class, id);
-    if (p == null) {
-      return "redirect:/user/error";
-    }
-
-    // Verificación estricta de seguridad
-    if (p.getCliente().getId() != requester.getId() 
-        && !requester.hasRole(Role.ADMIN) 
-        && !requester.hasRole(Role.GESTOR_CAFETERIA)) {
-      throw new NoEsTuPerfilException(); // Devuelve 403 Forbidden
-    }
-
-    model.addAttribute("pedido", p);
-    return "ticket"; // Renderiza ticket.html
-  }
 }
 

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,6 +81,8 @@ public class User implements Transferable<User.Transfer> {
 
   @ManyToOne
   @JoinColumn(name = "facultad_gestionada_id")
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Facultad facultadGestionada;
 
   /**

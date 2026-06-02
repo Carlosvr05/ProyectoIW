@@ -1,6 +1,10 @@
 package es.ucm.fdi.iw.controller;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,9 +12,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import es.ucm.fdi.iw.model.Message;
 import es.ucm.fdi.iw.model.User;
+import es.ucm.fdi.iw.model.Pedido;
+import es.ucm.fdi.iw.model.Consejo;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -22,6 +29,8 @@ import jakarta.transaction.Transactional;
  */
 @Controller
 public class RootController {
+
+    private static final Logger log = LogManager.getLogger(RootController.class);
 
     @Autowired
     private EntityManager entityManager;
@@ -51,16 +60,33 @@ public class RootController {
         return "login";
     }
 
-    /**
-     * Muestra la página por defecto del sitio (inicio).
-     */
-    @GetMapping("/")
-    public String index(Model model) {
+    private void populateInicioModel(Model model) {
         model.addAttribute("platos", entityManager.createQuery("SELECT p FROM Plato p", es.ucm.fdi.iw.model.Plato.class)
                 .setMaxResults(5).getResultList());
         model.addAttribute("facultades",
                 entityManager.createQuery("SELECT f FROM Facultad f", es.ucm.fdi.iw.model.Facultad.class)
                         .setMaxResults(5).getResultList());
+
+        // Cargar consejos de la base de datos
+        List<Consejo> consejosList = entityManager.createQuery("SELECT c FROM Consejo c", Consejo.class).getResultList();
+        List<String> consejosTextos = consejosList.stream()
+                .map(Consejo::getTexto)
+                .collect(Collectors.toList());
+        String jsonConsejos = "[]";
+        try {
+            jsonConsejos = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(consejosTextos);
+        } catch (Exception e) {
+            log.error("Error serializando consejos a JSON", e);
+        }
+        model.addAttribute("consejos", jsonConsejos);
+    }
+
+    /**
+     * Muestra la página por defecto del sitio (inicio).
+     */
+    @GetMapping("/")
+    public String index(Model model) {
+        populateInicioModel(model);
         return "inicio";
     }
 
@@ -69,11 +95,7 @@ public class RootController {
      */
     @GetMapping("/inicio")
     public String inicio(Model model) {
-        model.addAttribute("platos", entityManager.createQuery("SELECT p FROM Plato p", es.ucm.fdi.iw.model.Plato.class)
-                .setMaxResults(5).getResultList());
-        model.addAttribute("facultades",
-                entityManager.createQuery("SELECT f FROM Facultad f", es.ucm.fdi.iw.model.Facultad.class)
-                        .setMaxResults(5).getResultList());
+        populateInicioModel(model);
         return "inicio"; // Renderiza 'inicio.html'
     }
 
@@ -119,6 +141,54 @@ public class RootController {
         // Redirigir de nuevo a la vista de contacto enviando un parámetro de éxito
         // (?exito=true)
         return "redirect:/contacto?exito=true";
+    }
+
+    /**
+     * Muestra la vista del ticket digital del pedido.
+     * Accesible para el dueño del pedido, ADMIN o GESTOR_CAFETERIA.
+     */
+    @GetMapping("/ticket/{id}")
+    public String verTicket(@PathVariable long id, HttpSession session, Model model) {
+        User requester = (User) session.getAttribute("u");
+        if (requester == null) {
+            return "redirect:/login";
+        }
+
+        Pedido p = entityManager.find(Pedido.class, id);
+        if (p == null) {
+            return "redirect:/user/error";
+        }
+
+        // Verificación de seguridad
+        if (p.getCliente().getId() != requester.getId() 
+                && !requester.hasRole(User.Role.ADMIN) 
+                && !requester.hasRole(User.Role.GESTOR_CAFETERIA)) {
+            throw new UserController.NoEsTuPerfilException(); // Devuelve 403 Forbidden
+        }
+
+        model.addAttribute("pedido", p);
+        return "ticket"; // Renderiza ticket.html
+    }
+
+    /**
+     * Pasa el pedido de estado SOLICITADO a FINALIZADO.
+     */
+    @PostMapping("/ticket/{id}/finalizar")
+    @Transactional
+    public String finalizarPedido(@PathVariable long id, HttpSession session) {
+        User requester = (User) session.getAttribute("u");
+        if (requester == null || (!requester.hasRole(User.Role.ADMIN) && !requester.hasRole(User.Role.GESTOR_CAFETERIA))) {
+            return "redirect:/login";
+        }
+
+        Pedido p = entityManager.find(Pedido.class, id);
+        if (p != null && p.getEstado() == Pedido.Estado.SOLICITADO) {
+            p.setEstado(Pedido.Estado.FINALIZADO);
+            entityManager.merge(p);
+            log.info("Pedido {} finalizado por {}", id, requester.getUsername());
+        }
+
+        return "redirect:/ticket/" + id;
     }
 
 }

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <title>MenUni: Gestor de Consejos</title>
+</head>
+
+<body class="d-flex flex-column h-100">
+    <!-- Navegación principal -->
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+
+    <main class="flex-shrink-0">
+        <div class="container mt-5 mb-5" style="max-width: 900px;">
+            <h1 class="mb-4 text-center">Gestor de Consejos Saludables</h1>
+
+            <!-- Formulario para añadir nuevos consejos -->
+            <div class="card mb-5 mt-4 shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-lightbulb-fill"></i> Añadir Nuevo Consejo</h4>
+                </div>
+                <div class="card-body bg-light">
+                    <form th:action="@{/admin/consejos/add}" method="post">
+                        <div class="mb-3">
+                            <label for="texto" class="form-label fw-bold">Texto del consejo</label>
+                            <textarea class="form-control border-secondary border-opacity-50" id="texto" name="texto" rows="3"
+                                placeholder="Escribe aquí un consejo saludable interactivo..." required></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success fw-bold">
+                                <i class="bi bi-plus-lg"></i> Guardar Consejo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabla de gestión de consejos -->
+            <h2 class="mb-3"><i class="bi bi-list-task"></i> Consejos en el Sistema</h2>
+            <div class="table-responsive shadow-sm rounded border">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 80px;" class="text-center">ID</th>
+                            <th>Texto del Consejo</th>
+                            <th style="width: 200px;" class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Iteración sobre la lista de consejos -->
+                        <tr th:each="consejo : ${consejos}">
+                            <td th:text="${consejo.id}" class="fw-bold text-center text-muted">1</td>
+                            <td th:text="${consejo.texto}">Texto del consejo...</td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm fw-bold" data-bs-toggle="modal"
+                                        th:attr="data-bs-target='#editModal' + ${consejo.id}">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </button>
+                                    <form th:action="@{/admin/consejos/delete/{id}(id=${consejo.id})}" method="post"
+                                        onsubmit="return confirm('¿Eliminar este consejo permanentemente de la página de inicio?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm fw-bold">
+                                            <i class="bi bi-trash"></i> Borrar
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- Modal de edición -->
+                                <div class="modal fade text-start" th:id="'editModal' + ${consejo.id}" tabindex="-1"
+                                    aria-labelledby="editModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow-lg">
+                                            <div class="modal-header bg-primary text-white">
+                                                <h5 class="modal-title" id="editModalLabel">
+                                                    <i class="bi bi-pencil-square"></i> Editar Consejo #<span th:text="${consejo.id}"></span>
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body bg-light">
+                                                <form th:action="@{/admin/consejos/edit/{id}(id=${consejo.id})}" method="post">
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold">Texto del consejo</label>
+                                                        <textarea class="form-control border-secondary border-opacity-50" name="texto" rows="4"
+                                                            th:text="${consejo.texto}" required></textarea>
+                                                    </div>
+                                                    <div class="d-grid mt-3">
+                                                        <button type="submit" class="btn btn-primary fw-bold">
+                                                            <i class="bi bi-save"></i> Guardar Cambios
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Si no hay consejos -->
+                        <tr th:if="${#lists.isEmpty(consejos)}">
+                            <td colspan="3" class="text-center py-4 text-muted fs-5">
+                                <i class="bi bi-info-circle d-block mb-2 fs-3"></i>
+                                No hay consejos registrados. Se utilizarán los predeterminados.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Pie de página -->
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
+</body>
+
+</html>

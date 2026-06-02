@@ -87,18 +87,19 @@
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
-    <script>
-        const consejos = [
-            "Beber agua antes de comer ayuda a la digestión.",
-            "La fruta entera es mejor que en zumo por la fibra.",
-            "Intenta reducir el azúcar en el café de la mañana.",
-            "Comer despacio aumenta la sensación de saciedad.",
-            "Las legumbres son una gran fuente de proteína vegetal."
-        ];
+    <script th:inline="javascript">
+        const consejos = [(${consejos})];
 
         function generarConsejo() {
-            const indice = Math.floor(Math.random() * consejos.length);
-            document.getElementById('textoConsejo').innerText = consejos[indice];
+            const listado = (consejos && consejos.length > 0) ? consejos : [
+                "Beber agua antes de comer ayuda a la digestión.",
+                "La fruta entera es mejor que en zumo por la fibra.",
+                "Intenta reducir el azúcar en el café de la mañana.",
+                "Comer despacio aumenta la sensación de saciedad.",
+                "Las legumbres son una gran fuente de proteína vegetal."
+            ];
+            const indice = Math.floor(Math.random() * listado.length);
+            document.getElementById('textoConsejo').innerText = listado[indice];
         }
 
         document.addEventListener("DOMContentLoaded", generarConsejo);

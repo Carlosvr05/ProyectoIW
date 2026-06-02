@@ -151,19 +151,18 @@
                                 <!-- Contenedor del código QR (Se inyecta la librería qrcode.js aquí) -->
                                 <div class="bg-white p-3 rounded shadow-sm d-inline-block mb-3 border">
                                     <!-- Guardamos la ruta al ticket que va a contener el QR en data-qr-path -->
-                                    <div class="qrcode-container"
-                                        th:attr="data-qr-path='/user/pedidos/' + ${pedido.id} + '/ticket'">
-                                    </div>
+                                     <div class="qrcode-container"
+                                         th:attr="data-qr-path='/ticket/' + ${pedido.id}">
+                                     </div>
                                 </div>
 
                                 <p class="small text-muted mt-2 px-2">Muestra este código en la cafetería para recoger tu pedido.</p>
 
                                 <!-- Botón que despliega el modal con la lista de platos (ticket) y botón de ocultar -->
                                 <div class="d-flex flex-column gap-2 mt-3">
-                                    <button type="button" class="btn btn-outline-primary w-100 fw-bold"
-                                        data-bs-toggle="modal" th:attr="data-bs-target='#pedidoModal' + ${pedido.id}">
-                                        <i class="bi bi-list-ul"></i> Ver ticket
-                                    </button>
+                                     <a th:href="@{/ticket/{id}(id=${pedido.id})}" class="btn btn-outline-primary w-100 fw-bold">
+                                         <i class="bi bi-receipt"></i> Ver ticket digital
+                                     </a>
                                     <form th:action="@{/user/pedidos/__${pedido.id}__/delete}" method="POST"
                                         onsubmit="return confirm('¿Borrar este pedido de tu historial definitivamente?');">
                                         <button type="submit" class="btn btn-outline-danger btn-sm w-100">

@@ -1,27 +1,33 @@
 <!DOCTYPE html>
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
     <title>MenUni - Panel de Cocina</title>
     <style>
         .pedido-card-cocina {
             transition: all 0.3s ease;
-            border-left: 5px solid #ffc107; /* Amarillo para solicitado */
+            border-left: 5px solid #ffc107;
+            /* Amarillo para solicitado */
         }
+
         .pedido-card-preparando {
-            border-left: 5px solid #0dcaf0; /* Azul para preparando */
+            border-left: 5px solid #0dcaf0;
+            /* Azul para preparando */
         }
+
         .pedido-card-cocina:hover {
             transform: translateY(-3px);
         }
     </style>
 </head>
+
 <body class="d-flex flex-column h-100 bg-light">
     <!-- Navegación principal -->
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
     <main class="flex-shrink-0 container my-4">
-        
+
         <!-- Encabezado del panel -->
         <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
             <div>
@@ -35,39 +41,45 @@
 
         <!-- Grid de pedidos de cocina -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="contenedor-pedidos-cocina">
-            
+
             <!-- Bucle Thymeleaf para cargar los pedidos preexistentes (Solicitados o Preparando) -->
             <div class="col" th:each="pedido : ${pedidos}" th:id="'pedido-card-cocina-' + ${pedido.id}">
-                <div class="card h-100 shadow-sm pedido-card-cocina" 
-                     th:classappend="${pedido.estado.name() == 'PREPARANDO'} ? 'pedido-card-preparando' : ''">
-                    
+                <div class="card h-100 shadow-sm pedido-card-cocina"
+                    th:classappend="${pedido.estado.name() == 'PREPARANDO'} ? 'pedido-card-preparando' : ''">
+
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="card-title text-primary fw-bold mb-0">Pedido #<span th:text="${pedido.id}"></span></h5>
-                            <span class="badge rounded-pill bg-light text-primary border border-primary px-3 py-1 fw-bold label-estado" 
-                                  th:text="${pedido.estado}"></span>
+                            <h5 class="card-title text-primary fw-bold mb-0">Pedido #<span
+                                    th:text="${pedido.id}"></span></h5>
+                            <span
+                                class="badge rounded-pill bg-light text-primary border border-primary px-3 py-1 fw-bold label-estado"
+                                th:text="${pedido.estado}"></span>
                         </div>
-                        
+
                         <div class="mb-3 small text-muted">
-                            <i class="bi bi-person"></i> Cliente: <strong th:text="${pedido.cliente.username}"></strong><br>
-                            <i class="bi bi-clock"></i> Recibido: <span th:text="${pedido.fechaCompra != null ? #temporals.format(pedido.fechaCompra, 'HH:mm') : 'Ahora'}"></span>
+                            <i class="bi bi-person"></i> Cliente: <strong
+                                th:text="${pedido.cliente.username}"></strong><br>
+                            <i class="bi bi-clock"></i> Recibido: <span
+                                th:text="${pedido.fechaCompra != null ? #temporals.format(pedido.fechaCompra, 'HH:mm') : 'Ahora'}"></span>
                         </div>
 
                         <!-- Lista de platos del pedido -->
                         <ul class="list-group list-group-flush mb-3">
-                            <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0 border-bottom border-light" 
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0 border-bottom border-light"
                                 th:each="linea : ${pedido.lineas}">
                                 <span class="text-dark" th:text="${linea.plato.nombre}">Plato</span>
-                                <span class="badge bg-secondary rounded-pill" th:text="${linea.cantidad} + ' ud'"></span>
+                                <span class="badge bg-secondary rounded-pill"
+                                    th:text="${linea.cantidad} + ' ud'"></span>
                             </li>
                         </ul>
                     </div>
 
                     <!-- Botón de control de estados -->
                     <div class="card-footer bg-white border-top-0 pb-3">
-                        <button type="button" class="btn btn-primary w-100 fw-bold btn-avanzar-estado" 
-                                th:attr="onclick='avanzarEstadoPedido(' + ${pedido.id} + ')'">
-                            <i class="bi bi-arrow-right-circle"></i> <span th:text="${pedido.estado.name() == 'SOLICITADO'} ? 'Comenzar Preparación' : 'Marcar como Listo'"></span>
+                        <button type="button" class="btn btn-primary w-100 fw-bold btn-avanzar-estado"
+                            th:attr="onclick='avanzarEstadoPedido(' + ${pedido.id} + ')'">
+                            <i class="bi bi-arrow-right-circle"></i> <span
+                                th:text="${pedido.estado.name() == 'SOLICITADO'} ? 'Comenzar Preparación' : 'Marcar como Listo'"></span>
                         </button>
                     </div>
                 </div>
@@ -76,11 +88,12 @@
         </div>
 
         <!-- Alerta si no hay pedidos -->
-        <div id="sin-pedidos-alerta" class="alert alert-info border shadow-sm p-4 text-center mt-4" 
-             th:style="${#lists.isEmpty(pedidos)} ? 'display: block;' : 'display: none;'">
+        <div id="sin-pedidos-alerta" class="alert alert-info border shadow-sm p-4 text-center mt-4"
+            th:style="${#lists.isEmpty(pedidos)} ? 'display: block;' : 'display: none;'">
             <i class="bi bi-emoji-smile fs-2 d-block mb-2 text-primary"></i>
             <h5 class="fw-bold mb-1">¡Cocina al día!</h5>
-            <p class="text-muted mb-0 small">No hay pedidos pendientes de preparar en este momento. Las nuevas comandas aparecerán en tiempo real.</p>
+            <p class="text-muted mb-0 small">No hay pedidos pendientes de preparar en este momento. Las nuevas comandas
+                aparecerán en tiempo real.</p>
         </div>
 
     </main>
@@ -113,7 +126,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             // Suscripción al tópico de cocina si WebSockets está activo
             if (ws.stompClient) {
-                ws.stompClient.subscribe('/topic/pedidos-cocina', function(msg) {
+                ws.stompClient.subscribe('/topic/pedidos-cocina', function (msg) {
                     const pedido = JSON.parse(msg.body);
                     sonarAlertaComanda();
                     agregarPedidoPantalla(pedido);
@@ -203,4 +216,5 @@
         }
     </script>
 </body>
+
 </html>

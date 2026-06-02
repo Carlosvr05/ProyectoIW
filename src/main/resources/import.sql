@@ -37,6 +37,8 @@ INSERT INTO IWUser (id, enabled, roles, username, password, facultad_gestionada_
 VALUES (3, TRUE, 'USER,GESTOR_CAFETERIA', 'c',
     '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W', 1);
 
+UPDATE Facultad SET gestor_id = 3 WHERE id = 1;
+
 -- Insertar Platos
 INSERT INTO Plato (id, nombre, descripcion, activo, precio) 
 VALUES (100, 'Hamburguesa', 'Hamburguesa con queso', TRUE, 5.50);
@@ -66,3 +68,10 @@ INSERT INTO plato_facultades (plato_id, facultad_id) VALUES (103, 5);
 INSERT INTO valoracion (id, puntuacion, plato_id, facultad_id, user_id) VALUES (200, 5, 100, 1, 1);
 INSERT INTO valoracion (id, puntuacion, plato_id, facultad_id, user_id) VALUES (201, 4, 100, 1, 2);
 INSERT INTO valoracion (id, puntuacion, plato_id, facultad_id, user_id) VALUES (202, 5, 100, 1, 3);
+
+-- Insertar Consejos iniciales
+INSERT INTO Consejo (id, texto) VALUES (1, 'Beber agua antes de comer ayuda a la digestión.');
+INSERT INTO Consejo (id, texto) VALUES (2, 'La fruta entera es mejor que en zumo por la fibra.');
+INSERT INTO Consejo (id, texto) VALUES (3, 'Intenta reducir el azúcar en el café de la mañana.');
+INSERT INTO Consejo (id, texto) VALUES (4, 'Comer despacio aumenta la sensación de saciedad.');
+INSERT INTO Consejo (id, texto) VALUES (5, 'Las legumbres son una gran fuente de proteína vegetal.');

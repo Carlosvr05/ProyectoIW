@@ -344,13 +344,15 @@ public class PlatoController {
     private SimpMessagingTemplate messagingTemplate;
 
     /**
-     * MONITOR DE COCINA: Muestra los pedidos entrantes para los gestores de cafetería.
+     * MONITOR DE COCINA: Muestra los pedidos entrantes para los gestores de
+     * cafetería.
      */
     @GetMapping("/cocina")
     public String monitorCocina(Model model, HttpSession session) {
         User requester = (User) session.getAttribute("u");
         // Filtro estricto de seguridad: Solo gestores de cafetería o admins
-        if (requester == null || (!requester.hasRole(User.Role.ADMIN) && !requester.hasRole(User.Role.GESTOR_CAFETERIA))) {
+        if (requester == null
+                || (!requester.hasRole(User.Role.ADMIN) && !requester.hasRole(User.Role.GESTOR_CAFETERIA))) {
             return "redirect:/login";
         }
 
@@ -365,14 +367,17 @@ public class PlatoController {
     }
 
     /**
-     * AJAX/REST: Avanza el estado del pedido en cocina y notifica al usuario por WebSocket.
+     * AJAX/REST: Avanza el estado del pedido en cocina y notifica al usuario por
+     * WebSocket.
      */
     @PostMapping("/cocina/completar/{id}")
     @Transactional
     @ResponseBody
-    public String avanzarEstado(@PathVariable long id, HttpSession session, jakarta.servlet.http.HttpServletResponse response) throws IOException {
+    public String avanzarEstado(@PathVariable long id, HttpSession session,
+            jakarta.servlet.http.HttpServletResponse response) throws IOException {
         User requester = (User) session.getAttribute("u");
-        if (requester == null || (!requester.hasRole(User.Role.ADMIN) && !requester.hasRole(User.Role.GESTOR_CAFETERIA))) {
+        if (requester == null
+                || (!requester.hasRole(User.Role.ADMIN) && !requester.hasRole(User.Role.GESTOR_CAFETERIA))) {
             response.sendError(403, "No autorizado");
             return null;
         }
@@ -392,7 +397,8 @@ public class PlatoController {
                     + "\"type\": \"PEDIDO_LISTO\","
                     + "\"pedidoId\": " + p.getId()
                     + "}";
-            messagingTemplate.convertAndSend("/user/" + p.getCliente().getUsername() + "/queue/updates", notificacionUsuario);
+            messagingTemplate.convertAndSend("/user/" + p.getCliente().getUsername() + "/queue/updates",
+                    notificacionUsuario);
         }
 
         return "{\"status\":\"ok\",\"nuevoEstado\":\"" + p.getEstado().name() + "\"}";

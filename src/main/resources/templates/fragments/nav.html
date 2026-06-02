@@ -46,9 +46,16 @@
                                 <a class="nav-link fw-bold text-success" th:href="@{/facultades/gestor}">Gestor
                                     Facultades</a>
                             </li>
+                            <li class="nav-item mx-2 d-flex align-items-center" th:if="${u.hasRole('ADMIN')}">
+                                <a class="nav-link fw-bold text-success" th:href="@{/admin/consejos}">Gestor Consejos</a>
+                            </li>
                             <li class="nav-item mx-2 d-flex align-items-center"
                                 th:if="${u.hasRole('ADMIN') or u.hasRole('GESTOR_CAFETERIA')}">
                                 <a class="nav-link fw-bold text-success" th:href="@{/plato/gestor}">Gestor Platos</a>
+                            </li>
+                            <li class="nav-item mx-2 d-flex align-items-center"
+                                th:if="${u.hasRole('ADMIN') or u.hasRole('GESTOR_CAFETERIA')}">
+                                <a class="nav-link fw-bold text-success" th:href="@{/plato/cocina}">Monitor Cocina</a>
                             </li>
                             <li class="nav-item mx-3 d-flex align-items-center">
                                 <a class="btn btn-primary btn-sm fw-bold text-white shadow-sm"

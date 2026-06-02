@@ -3,6 +3,8 @@ package es.ucm.fdi.iw.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +28,12 @@ public class Facultad {
     private String horario; 
     
     private String aforo; 
+
+    @OneToOne
+    @JoinColumn(name = "gestor_id")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private User gestor;
 
     // Una facultad tiene muchos platos disponibles
     @ManyToMany(mappedBy = "facultades")

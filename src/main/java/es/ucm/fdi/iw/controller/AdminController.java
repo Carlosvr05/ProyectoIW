@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import es.ucm.fdi.iw.model.Topic;
@@ -21,6 +22,7 @@ import es.ucm.fdi.iw.model.Lorem;
 import es.ucm.fdi.iw.model.Message;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
+import es.ucm.fdi.iw.model.Consejo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.servlet.http.HttpSession;
@@ -143,6 +145,60 @@ public class AdminController {
       }
     }
     return "{\"admin\": \"populated\"}"; // Responde éxito en formato JSON
+  }
+
+  /**
+   * Muestra la vista de gestión de consejos para el administrador.
+   */
+  @GetMapping("/consejos")
+  public String manageConsejos(Model model) {
+      log.info("Admin accede a la gestión de consejos");
+      List<Consejo> consejos = entityManager.createQuery("SELECT c FROM Consejo c", Consejo.class)
+              .getResultList();
+      model.addAttribute("consejos", consejos);
+      return "gestor_consejos";
+  }
+
+  /**
+   * Crea un nuevo consejo saludable.
+   */
+  @PostMapping("/consejos/add")
+  @Transactional
+  public String addConsejo(@RequestParam String texto) {
+      Consejo c = new Consejo();
+      c.setTexto(texto);
+      entityManager.persist(c);
+      log.info("Consejo añadido correctamente: {}", texto);
+      return "redirect:/admin/consejos";
+  }
+
+  /**
+   * Edita un consejo existente en el sistema.
+   */
+  @PostMapping("/consejos/edit/{id}")
+  @Transactional
+  public String editConsejo(@PathVariable long id, @RequestParam String texto) {
+      Consejo c = entityManager.find(Consejo.class, id);
+      if (c != null) {
+          c.setTexto(texto);
+          entityManager.merge(c);
+          log.info("Consejo {} editado correctamente", id);
+      }
+      return "redirect:/admin/consejos";
+  }
+
+  /**
+   * Elimina un consejo por completo.
+   */
+  @PostMapping("/consejos/delete/{id}")
+  @Transactional
+  public String deleteConsejo(@PathVariable long id) {
+      Consejo c = entityManager.find(Consejo.class, id);
+      if (c != null) {
+          entityManager.remove(c);
+          log.info("Consejo {} eliminado", id);
+      }
+      return "redirect:/admin/consejos";
   }
 
 }

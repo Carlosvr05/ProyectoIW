@@ -18,7 +18,8 @@ public class Pedido {
         PREPARANDO,
         LISTO_PARA_RECOGER,
         ENTREGADO,
-        CANCELADO
+        CANCELADO,
+        FINALIZADO
     }
 
     @Id

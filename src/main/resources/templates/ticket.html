@@ -26,6 +26,7 @@
         .stamp-preparando { border-color: #0dcaf0; color: #0dcaf0; }
         .stamp-listo { border-color: #198754; color: #198754; }
         .stamp-entregado { border-color: #6c757d; color: #6c757d; }
+        .stamp-finalizado { border-color: #20c997; color: #20c997; }
     </style>
 </head>
 <body class="bg-light py-5">
@@ -51,7 +52,8 @@
                 <div class="stamp mt-1" 
                      th:classappend="${pedido.estado.name() == 'SOLICITADO' ? 'stamp-solicitado' : 
                                      (pedido.estado.name() == 'PREPARANDO' ? 'stamp-preparando' : 
-                                     (pedido.estado.name() == 'LISTO' ? 'stamp-listo' : 'stamp-entregado'))}"
+                                     (pedido.estado.name() == 'LISTO_PARA_RECOGER' ? 'stamp-listo' : 
+                                     (pedido.estado.name() == 'FINALIZADO' ? 'stamp-finalizado' : 'stamp-entregado')))}"
                      th:text="${pedido.estado}">
                     SOLICITADO
                 </div>
@@ -96,6 +98,23 @@
         <div class="border-top pt-3 d-flex justify-content-between align-items-center bg-light p-3 rounded">
             <span class="fs-5 fw-bold text-dark">TOTAL PAGADO:</span>
             <span class="fs-3 fw-bold text-primary"><span th:text="${#numbers.formatDecimal(pedido.total, 1, 2)}">0.00</span>€</span>
+        </div>
+
+        <!-- Botón para finalizar pedido (Pregunta C) -->
+        <div th:if="${pedido.estado.name() == 'SOLICITADO' and (u.hasRole('ADMIN') or u.hasRole('GESTOR_CAFETERIA'))}" 
+             class="mt-4 text-center">
+            <form th:action="@{/ticket/{id}/finalizar(id=${pedido.id})}" method="POST">
+                <button type="submit" class="btn btn-success btn-lg w-100 fw-bold shadow-sm">
+                    <i class="bi bi-check-circle"></i> Finalizar Pedido
+                </button>
+            </form>
+        </div>
+
+        <!-- Enlace para volver atrás -->
+        <div class="text-center mt-3 pt-2">
+            <a th:href="@{/user/{id}#pedidos(id=${u.id})}" class="btn btn-outline-secondary btn-sm" th:if="${u != null}">
+                <i class="bi bi-arrow-left"></i> Volver a mis pedidos
+            </a>
         </div>
 
         <!-- Pie del Ticket -->

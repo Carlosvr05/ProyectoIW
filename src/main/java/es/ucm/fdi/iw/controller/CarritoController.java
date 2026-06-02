@@ -129,6 +129,7 @@ public class CarritoController {
 
                 String jsonCocina = "{"
                         + "\"id\": " + pedido.getId() + ","
+                        + "\"facultadId\": " + entry.getKey().getId() + ","
                         + "\"estado\": \"" + pedido.getEstado().name() + "\","
                         + "\"cliente\": \"" + dbUser.getUsername() + "\","
                         + "\"hora\": \"" + horaCompra + "\","
